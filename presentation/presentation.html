@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Underscore - December 13 Meetup</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link href='http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700,200' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+    <style type="text/css" media="screen">
+      .remark-slide .remark-slide-content {
+          padding: 1em 1em;
+      }
+      
+      pre code, .codeTable {
+        font-size: 0.8em;
+      }
+      
+      .morpheus img {
+        width: 280px;
+        border-radius: 10px;
+      }  
+
+      .boromir img {
+        width: 400px;
+        border-radius: 10px;
+      }       
+      
+      body { 
+        font-family: arial, sans-serif;
+        font-weight: 400;
+      }
+      h1, h2, h3 {
+        font-family: arial, sans-serif;
+        font-weight: 400;
+        margin: 5px 0px;
+      }
+      
+      h1, h2 {
+        color: rgb(255, 255, 255);
+        background-color: rgb(76, 102, 164);
+        padding: 5px 10px;
+      }
+      h1 { font-size: 4em; }
+      h2 { font-size: 1.8em; }
+      h3 { font-size: 1.6em; }
+      body { font-size: 1.5em; }
+
+      .slide .content {
+        padding: 10px 90px !important;
+      }
+
+      #slideshow .no-highlight {
+        font-size: 1em !important;
+      }
+
+      blockquote {
+        font-style: italic;
+        margin: 0.25em 0;
+        padding: 0.25em 40px;
+        line-height: 1.45;
+        position: relative;
+      }
+
+      blockquote:before {
+        opacity: 0.8;
+        display: block;
+        content: "\201C";
+        font-size: 3em;
+        position: absolute;
+        left: -20px;
+        top: -20px;
+      }
+
+      blockquote cite {
+        opacity: 0.8;
+        font-size: 1em;
+        display: block;
+        margin-top: 5px;
+      }
+ 
+      blockquote cite:before {
+        content: "\2014 \2009";
+      }
+
+     /* Two-column layout */
+    .left-column {
+      width: 50%;
+      float: left;
+    }
+    .right-column {
+      width: 50%;
+      float: right;
+    }
+
+    code {
+      -moz-border-radius: 5px;
+      -web-border-radius: 5px;
+      background: #e7e8e2;
+      border-radius: 5px;
+    }
+
+    .inverse {
+      background: #A60A17;
+    }
+
+    /* slides */
+
+    .bg-red {
+      background: #A60A17;
+    }
+    .bg-dark {
+      color: white;
+      text-shadow: 0 0 20px #333;
+    }
+    </style>
+</head>
+<body>
+    <textarea id="source">
+
+class: center, middle
+
+# Title
+
+---
+
+layout: true
+
+## Warm up: Iterator
+
+---
+
+In typical OO code we use an external iterator to traverse a collection:
+
+``` 
+case class Bug(c: Code)
+case class Feature(c: Code)
+
+val bugs: List[Bug] = List(Bug("null"), Bug("???"), Bug("var x = 3"))
+
+val bugsIter = bugs.iterator
+val featureBuffer = ListBuffer[Feature]()
+
+while(bugsIter.hasNext) {
+  featureBuffer += Feature(bugsIter.next().c)
+}
+
+val features = featureBuffer.toList
+// => List(Feature(null), Feature(???), Feature(var x = 3))
+```
+
+---
+
+In Scala, we typically use an internal iterator:
+
+``` 
+case class Bug(c: Code)
+case class Feature(c: Code)
+  
+val bugs: List[Bug] = List(Bug("null"), Bug("???"), Bug("var x = 3"))
+
+val features: List[Feature] = bugs map (b => Feature(b.c))
+
+// or we can use 'for' notation
+val features2: List[Feature] = for (b <- bugs) yield Feature(b.c)
+
+// => List(Feature(null), Feature(???), Feature(var x = 3))
+```
+
+---
+
+Internal iterators combine nicely.
+
+For example, we can use `flatMap` to achieve nested iteration:
+```
+case class Programmer(assignedBugs: List[Bug])
+
+val p1 = Programmer(List(Bug("null"), Bug("???"), Bug("var x = 3")))
+val p2 = Programmer(List(Bug("foo.asInstanceOf[Bar]"), Bug("1 = 2")))
+val ps = List(p1, p2)
+  
+val allFeatures: List[Feature] = 
+  ps flatMap (p => p.assignedBugs map (b => Feature(b.c)))
+
+// List(Feature(null), Feature(???), Feature(var x = 3), 
+//      Feature(foo.asInstanceOf[Bar]), Feature(1 = 2))
+```
+
+---
+Or even nicer with `for` notation:
+```
+val allFeatures: List[Feature] = for {
+  p <- ps
+  b <- p.assignedBugs
+} yield Feature(b.c)
+```
+  
+There are many other collection combinators, but not today...
+---
+
+layout: true
+
+## Warm up: Null object
+
+---
+
+Two common ways to deal with missing values in mainstream OO:
+
+  - null 
+  - null object pattern
+
+The first is ugly, the second is verbose
+---
+
+We start with the ugly:
+
+```
+// choose a random item from the two
+def choose[A](x: A, y: A): A = if (util.Random.nextDouble() < 0.5) x else y
+
+case class Coffee(amount: Int) {
+  def writeCode(): Code = choose(Code(s"$amount coffee => code"), null)
+}
+
+case class Code(code: String) {
+  def tryCompile(): Compiled = choose(Compiled(code), null)
+}
+
+case class Compiled(code: String)
+
+def getCoffee(): Coffee = choose(Coffee(3), null)
+
+val compiledCode = {
+  val coffee = getCoffee()
+  if (coffee == null) null
+  else {
+    val code = coffee.writeCode()
+    if (code == null) null
+    else code.tryCompile()
+  }
+}
+// either 'null' or 'Compiled(3 coffee => code)'
+```
+
+---
+
+And now to the verbose:
+```
+trait Coffee { def writeCode(): Code }
+case class RealCoffee(amount: Int) extends Coffee {
+  def writeCode(): Code = choose(RealCode(s"$amount coffee => code"), NoCode)
+}
+case object NoCoffee extends Coffee { def writeCode(): Code = NoCode }
+
+trait Code { def tryCompile(): Compiled }
+case class RealCode(code: String) extends Code {
+  def tryCompile(): Compiled = choose(RealCompiled(code), NotCompiled)
+}
+case object NoCode extends Code { def tryCompile(): Compiled = NotCompiled }
+
+trait Compiled
+case class RealCompiled(code: String) extends Compiled
+case object NotCompiled extends Compiled
+
+def getCoffee(): Coffee = choose(RealCoffee(3), NoCoffee)
+
+val compiledCode = getCoffee().writeCode().tryCompile()
+// either 'NotCompiled' or 'RealCompiled(3 coffee => code)'
+```
+   
+---
+
+Null objects are safer, but require way too much boilerplate for every case. In return:
+
+- we don't get any help from the compiler
+- there is no generic way to compose different null objects
+
+Let's look at the FP alternative, `Option`
+
+---
+
+First a naive approach:
+```
+case class Coffee(amount: Int) {
+  def writeCode(): Option[Code] = 
+    choose(Some(Code(s"$amount coffee => code")), None)
+}
+
+case class Code(code: String) {
+  def tryCompile(): Option[Compiled] = choose(Some(Compiled(code)), None)
+}
+
+case class Compiled(code: String)
+
+def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
+
+val compiledCode: Option[Compiled] = getCoffee match {
+  case Some(coffee) => coffee.writeCode() match {
+    case Some(code) => code.tryCompile()
+    case None => None
+  }
+  case None => None
+}
+
+// either 'None' or 'Some(Compiled(3 coffee => code))'
+```
+That's not much better than explicit `null` checking (although safer)...
+
+---
+
+Let's use some combinators:
+```
+case class Coffee(amount: Int) {
+  def writeCode(): Option[Code] = 
+    choose(Some(Code(s"$amount coffee => code")), None)
+}
+
+case class Code(code: String) {
+  def tryCompile(): Option[Compiled] = choose(Some(Compiled(code)), None)
+}
+
+case class Compiled(code: String)
+
+def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
+
+val compiledCode: Option[Compiled] = 
+  getCoffee flatMap (coffee =>
+    coffee.writeCode() flatMap (code =>
+      code.tryCompile()))
+      
+// either 'None' or 'Some(Compiled(3 coffee => code))'
+```
+
+---
+
+But remembering that `Option` is like a list of 0 or 1 items, we can use the `for` notation from before:
+
+```
+val compiledCode: Option[Compiled] = 
+  for {
+    coffee <- getCoffee
+    code <- coffee.writeCode()
+    compiled <- code.tryCompile()
+  } yield compiled
+      
+// either 'None' or 'Some(Compiled(3 coffee => code))'
+```
+
+Much nicer...
+
+---
+layout: false
+class: center middle
+
+Now that we're all warmed up, we can move on to something more challenging...
+
+.morpheus[![](morpheus.jpg)]
+
+---
+layout: true
+
+##  The decorator pattern
+
+---
+- The decorator pattern is used to create different combinations of object behaviors.
+
+- Probably the most Scala-esque way to achieve this is the [stackable trait pattern](http://www.artima.com/scalazine/articles/stackable_trait_pattern.html).
+
+- But we'll stick to the more convetional version of this design pattern.
+
+---
+
+We are going to model some simple attributes of programers. 
+
+The interface is
+```
+trait Programmer {
+  def makeCode(coffee: Coffee): LOC
+  def price: Money
+  def acceptProject(l: Language): Boolean
+}
+```
+
+And a basic implementation
+```
+class BasicProgrammer(experience: XPPoints,
+                      coffeeConsumption: Coffee,
+                      languages: Set[Language]) extends Programmer {
+
+  /* more coffee -> more code */
+  def makeCode(c: Coffee): LOC =
+    experience * math.max(0, c - coffeeConsumption)
+
+  def price: Money = experience * languages.size
+
+  def acceptProject(l: Language): Boolean = languages(l)
+}
+```
+
+---
+
+We need a default decorator that forwards all method calls to another `Programmer`:
+
+```
+abstract class ProgrammerDecorator(p: Programmer) extends Programmer {
+  def makeCode(c: Coffee): LOC = p.makeCode(c)
+  def price: Money = p.price
+  def acceptProject(l: Language): Boolean = p.acceptProject(l)
+}
+```
+
+---
+
+And here are some concrete decorators:
+
+```
+/* a programmer that writes tests */
+class TestingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
+  override def makeCode(c: Coffee): LOC = super.makeCode(c - 5) * 3
+  override def price: Money = super.price * 2
+}
+
+/* a programmer that writes documentation */
+class DocumentingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
+  override def price: Money = super.price * 10
+}
+
+class SaneProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
+  override def acceptProject(l): Boolean =
+    if (l == "PHP") false
+    else super.acceptProject(l)
+}
+
+/* a programmer that likes learning new languages */
+class PolyglotProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
+  override def acceptProject(l): Boolean = !super.acceptProject(l)
+}
+```
+
+---
+
+We can create different `Programmer`s by combining the different decorators
+
+```
+val base = new BasicProgrammer(
+  experience = 10, 
+  coffeeConsumption = 30, 
+  languages = Set("Scala", "Java", "PHP"))
+
+val saneDocTest = 
+  new SaneProgrammer(new DocumentingProgrammer(new TestingProgrammer(base)))
+  
+val documentingPolyglot = new PolyglotProgrammer(new DocumentingProgrammer(base))
+
+base.price // 30
+base.makeCode(40) // 100
+base.acceptProject("PHP") // true
+
+saneDocTest.price // 600
+saneDocTest.makeCode(40) // 150
+saneDocTest.acceptProject("PHP") // false
+
+documentingPolyglot.price // 300
+documentingPolyglot.makeCode(40) // 100
+documentingPolyglot.acceptProject("PHP") // false
+```
+
+---
+
+- Now, let's look at this problem from a Functional perspective
+
+- We need to rephrase the problem in terms of functions that are separate from the data
+
+- Because of the implicit `this`, we can view method calls as:
+<table class="codeTable">
+<tr><td>`prog.price()`</td><td>&nbsp;`-->`&nbsp;</td><td>`price(prog)`</td></tr>
+<tr><td>`prog.makeCode(coffee)`</td><td>&nbsp;`-->`&nbsp;</td><td>`makeCode(prog, coffee)`</td></tr>
+<tr><td>`prog.acceptProject(lang)`</td><td>&nbsp;`-->`&nbsp;</td><td>`acceptProject(prog, lang)`</td></tr>
+</table>
+
+- Or using types
+<table class="codeTable">
+<tr><td>`prog.price(): Money`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => Money`</td></tr>
+<tr><td>`prog.makeCode(c: Coffee): LOC`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Coffee => LOC)`</td></tr>
+<tr><td>`prog.acceptProject(l: Language): Boolean`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Language => Boolean)`</td></tr>
+</table>
+
+---
+
+- Viewed this way, the call to `super` is like function chaining
+.codeTable[
+`TestingProgrammer(DocumentingProgrammer(prog)).price()`  
+`-->`  
+`testPrice(docPrice(price(prog)))`
+]
+
+- With types
+.codeTable[
+`TestingProgrammer(DocumentingProgrammer(prog)).price()`  
+`-->`  
+`(Programmer => Money) andThen (Money => Money) andThen (Money => Money)`  
+&nbsp;  
+`(f andThen g)(x) == g(f(x))`
+]
+
+- So decoration is (almost) function composition
+
+- Let's code it up
+
+---
+First we need our data
+```
+case class Programmer(experience: XPPoints,
+                      coffeeConsumption: Coffee,
+                      languages: Set[Language])
+```
+
+With our basic functions
+```
+val makeCode: Programmer => (Coffee => LOC) =
+  p => 
+    c => p.experience * math.max(0, c - p.coffeeConsumption)
+
+val price: Programmer => Money =
+  p => p.experience * p.languages.size
+
+val acceptProject: Programmer => (Language => Boolean) =
+  p => 
+    l => p.languages(l)
+```
+
+---
+
+Which can be used like so
+```
+val p = Programmer(
+  experience = 10, 
+  coffeeConsumption = 30, 
+  languages = Set("Scala", "Java", "PHP"))
+
+price(p) // 30
+makeCode(p)(40) // 100
+acceptProject(p)("PHP") // true
+```
+
+---
+
+Now the decorators
+```
+val testMakeCode: (Coffee => LOC) => (Coffee => LOC) =
+  mc =>
+    c => mc(c - 5) * 3
+
+val testPrice: Money => Money = 
+  m => m * 2
+
+val docPrice: Money => Money = 
+  m => m * 10
+
+val saneAccept: (Language => Boolean) => (Language => Boolean) =
+  ap =>
+    l => if (l == "PHP") false else ap(l)
+
+val polyAccept: (Language => Boolean) => (Language => Boolean) =
+  ap =>
+    l => !ap(l)
+```
+
+---
+We can now imitate the decorator combinations from before
+```
+val testMC = makeCode andThen testMakeCode
+val testDocPrice = price andThen testPrice andThen docPrice
+val saneAcc = acceptProject andThen saneAccept
+
+val docPr = price andThen docPrice
+val polyAcc = acceptProject andThen polyAccept
+
+testDocPrice(p) // 600
+testMC(p)(40) // 150
+saneAcc(p)("PHP") // false
+
+docPr(p) // 300
+polyAcc(p)("PHP") // false
+```
+
+Notice that we only create the functions that were actually overriden by the OO decorators.
+        
+---
+
+To recap:
+
+- Methods are just functions: `Programmer => A`
+
+- Decorators are functions of type: `A => A`
+
+- Decoration is (almost) function composition:  
+`(Programmer => A) andThen (A => A)` `-->` `Programmer => A`
+
+- But who said that we have to use the same `A` all over the place? Function composition works just as well with different types.
+
+- Let's change it:  
+`(Programmer => A) andThen (A => B)` `-->` `Programmer => B`
+        
+- To achieve this in the OO version we would have to change the `Programmer` interface for every new function that we want to define.
+  
+---
+
+Here's an example
+
+```
+val shouldHire: Money => Boolean = m => m < 50
+
+val executiveDecision1: Programmer => Boolean = 
+  price andThen shouldHire
+  
+val executiveDecision2: Programmer => Boolean = 
+  price andThen testPrice andThen shouldHire
+
+executiveDecision1(p) // true
+executiveDecision2(p) // false
+```  
+
+---
+
+- Using function composition we can take any function chain of the form:  
+`Programmer => A => (A => B) => (B => C) => ... => (C => D)`  
+and turn it into a single function `Programmer => D`
+
+- This is a step beyond what we had in the classic decorator, but we are still missing something.
+
+- Although we didn't use it explicitly, in the original decorator, we had access to the value we wrapped. In  
+```
+class DocumentingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
+    override def price: Money = super.price * 10
+  }
+```
+we could actually call whatever we want on `p`. But there's no mention of a `Programmer` down our functions chain.
+  
+---
+
+- So how do we translate it back to our Functional code?
+
+- It means that we need to have a `Programmer` available inside our decorators:
+`Programmer => A => (A => Programmer => B)`
+
+- But the `Programmer` inside the chain should be the same one we started with:  
+`Programmer => A => (A => Programmer => B)` `-->` `Programmer => B`
+
+- Let's call the function that does this `flatAndThen`
+
+- With this function we can take any chain of the form:  
+`Programmer => A => (A => Programmer => B) => (B => Programmer => C) => ... => (C => Programmer => D)`  
+and turn into a single function `Programmer => D`
+
+---
+
+- To write down the function we'll just try to "follow the types" (down the rabbit hole) and see where it gets us.
+
+- We'll use an implicit class to "pimp" this function directly on our functions:
+
+```
+implicit class Decorator[A](f: Programmer => A) {
+  def flatAndThen[B](g: A => Programmer => B): Programmer => B =
+    p => {
+      val fg: Programmer => (Programmer => B) = (f andThen g)
+      val toB: Programmer => B = fg(p)
+      val b: B = toB(p)
+      b
+    }
+}
+```
+
+- Notice how the same `p` is used twice.
+---
+
+Let's test out our new powers:
+
+```
+val bonus: Money => (Programmer => Money) =
+  m => p => m + p.experience
+  
+val withBonus: Programmer => Money = 
+  price andThen testPrice flatAndThen bonus
+
+withBonus(p) // 70
+```
+
+```
+// with enough coffee, even a dead programmer can produce code
+val deadProgrammer: (Coffee => LOC) => Programmer => (Coffee => LOC) =
+  mc => p =>
+    c => if (c > 4 * p.coffeeConsumption) mc(c) else 0
+    
+val deadMake: Programmer => (Coffee => LOC) = 
+  makeCode flatAndThen deadProgrammer andThen testMakeCode
+  
+deadMake(p)(50) // 0
+deadMake(p)(130) // 2850
+```
+
+---
+
+We can also combine a number of `Programmer` functions:
+
+```
+val costEffective: Programmer => (Coffee => Boolean) =
+  makeCode flatAndThen (mc =>
+    price andThen (pr =>
+      mc andThen (loc => loc > pr)
+    ))
+    
+costEffective2(p)(30) // false
+costEffective2(p)(120) // true
+```
+
+
+- `makeCode` is like a container for a `Coffee => LOC` function value, and `price` is a container for a `Money` value.
+
+- `andThen` and `flatAndThen` help us reach inside the container and manipulate its contents (sounds familiar?).
+---
+
+- The values depend on the `Programmer` instance that we are going to provide in the future.
+
+- Kind of like Dependency Injection.
+
+- But it's becoming a bit clumsy to write, we'll address this issue later on.
+
+---
+layout: false
+
+##The decorator pattern - summary
+
+- OO decoration is similar to FP (flattened) function composition.
+
+- OO decoration works well when we have a fixed set of functions and many types of data.
+
+- FP decoration works well when we have a fixed set of data types and many functions to calculate over them.
+
+- Because of how function composition works, when used in the right context, FP decoration is much more flexible and lightweight than the OO counterpart.
+
+---
+
+class: center, middle
+
+This concludes the lighter part of the talk, brace yourself...
+
+.boromir[![](boromir.jpg)]
+
+---
+
+layout: true
+
+## The interpreter pattern
+
+---
+
+- The interpreter pattern is used when your language does not provide you with the right level of abstraction for the task at hand.
+
+- So you create your own Domain-Specific Language and embed it in the host language.
+
+- Nothing particularly OO about this. Typically, you represent the language as a `Composite`, and you interpret it using a `Visitor`.
+
+- Both patterns are pretty much lifted from FP, so we'll skip the OO implementation this time.
+
+- Scala has a number of ways of creating DSLs, e.g.: higher order functions, macros, string interpolators.
+
+- We'll try to come up with a way that works particularly well with separating the language from its interpretation.
+
+---
+
+- Our domain is going to be the actions that a programmer performs during work:
+
+    * drink coffee
+    * write code
+    * compile
+    * commit code
+    * bang head on keyboard
+
+- We would like to interconnect the different actions, so that one leads to another.
+
+- We also want to have interaction with the outer world. 
+
+- For example, compilation produces some response from outside, and based on this response we choose the next action.
+
+- But we do not want our language to know anything about how to obtain the responses, the interpreter will be responsible for that.
+
+---
+
+Code speaks louder than words:
+
+```
+sealed trait ProgAction
+
+case class DrinkCoffee(c: Cups, next: Coffee => ProgAction) extends ProgAction
+case class WriteCode(c: Coffee, next: Code => ProgAction) extends ProgAction
+case class Compile(c: Code, next: CompileResponse => ProgAction) extends ProgAction
+case class CommitCode(c: Code) extends ProgAction
+case object BangHeadOnKeyboard extends ProgAction
+
+sealed trait CompileResponse
+
+case class WaitTime(t: Time) extends CompileResponse
+case object Exception extends CompileResponse
+case object ScaryTypeException extends CompileResponse
+```
+
+---
+
+When we say `ScaryTypeException` we mean:
+
+```
+5862.scala:36: error: type mismatch;
+found : scala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+forSome { type _$1; type _$2; type _$3 } <: Object] with
+scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+forSome { type _$1; type _$2; type _$3 }, 
+scala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+forSome { type _$1; type _$2; type _$3 } <: Object] with
+scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+forSome { type _$1; type _$2; type _$3 },
+cala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+forSome { type _$1; type _$2; type _$3 } <: Object] with
+scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+forSome { type _$1; type _$2; type _$3 },
+scala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+forSome { type _$1; type _$2; type _$3 } <: Object] with
+scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]])
+...
+```
+and so on for another 200 lines
+
+---
+
+We can try and write a simple program:
+
+```
+val prog: ProgAction = DrinkCoffee(3,
+  coffee => WriteCode(coffee,
+    code => Compile(code,
+      compileResponse => compileResponse match {
+        case WaitTime(_) => CommitCode(code)
+        case _ => BangHeadOnKeyboard
+      })))
+```
+
+Kind of messy, but works.
+
+---
+
+But we have a problem, what if we want write snippets of actions and combine them together:
+
+```
+val drinkWrite: ProgAction = DrinkCoffee(3,
+  coffee => WriteCode(coffee,
+    code => ???
+  ))
+
+val compile: Code => ProgAction = code => Compile(code,
+  compileResponse => ???)
+  
+drinkWrite next compile
+```
+
+- We don't have a `next` function.
+- Nor do the types work out even if we did.
+- And what do we put instead of the `???`?
+
+---
+
+- The first snippet worked because we ended with either `CommitCode` or `BangHeadOnKeyboard`, both of those do not require any further actions.
+
+- But that's not the case with the other actions, we can't finish a snippet with any of those.
+
+- Let's loosen up the types a little bit, and see whether we can make this work:
+
+```
+sealed trait ProgAction[+A]
+
+case class DrinkCoffee[A](c: Cups, next: Coffee => A) extends ProgAction[A]
+case class WriteCode[A](c: Coffee, next: Code => A) extends ProgAction[A]
+case class Compile[A](c: Code, next: CompileResponse => A) extends ProgAction[A]
+case class CommitCode(c: Code) extends ProgAction[Nothing]
+case object BangHeadOnKeyboard extends ProgAction[Nothing]
+```
+
+- Now that the type is general, maybe we can use it to stub out arbitrary chains.
+
+---
+
+For this purpose, we are going to introduce some glue:
+
+```
+sealed trait Program[+A]
+case class Glue[A](pa: ProgAction[Program[A]]) extends Program[A]
+case class Return[A](a: A) extends Program[A]
+```
+
+- A `Program` is just a wrapper around some value of type `A`.
+
+- `Glue` sticks pieces of `ProgAction`s together, and `Return` lets us stub out a chain, returning the contained value.
+
+---
+
+- Let's see some examples:
+
+```
+val drink: Program[Coffee] = Glue(
+    DrinkCoffee(3, 
+        coffee => Return(coffee)))
+        
+val drinkWrite: Program[Code] = Glue(
+    DrinkCoffee(1, 
+        coffee => Glue(
+            WriteCode(coffee, 
+                code => Return(code)))))
+```
+
+- Each `Program` snippet contains the response for the action wrapped in a `Return`.
+---
+
+
+- Stubbing done, what about the `next` function?
+
+- Using the language of `Program`, we have the following types:
+
+```
+val drinkWrite: Program[Code]
+val compile: Code => Program[CompileResponse]
+val response: Program[CompileResponse] = drinkWrite next compile
+
+val next: Program[A] => (A => Program[B]) => Program[B]
+```
+
+- `next` should reach into our program, fetch the `A` value, apply a function to it, and produce a new `Program`.
+
+---
+
+We code `next` as a method on `Program`. Start with the easy case, `Return`:
+
+```
+sealed trait Program[+A] {
+  def next[B](f: A => Program[B]): Program[B] = this match {
+    case Return(a) => f(a)
+    case Glue(pa: ProgAction[A]) => ???
+  }
+}
+```
+
+- If we see a `Return`, we unwrap it, apply the function and return its result.
+
+- The `Glue` case is more difficult, because the `A` value is hidden inside a `ProgAction[Program[A]]`.
+
+- If we turn `ProgAction[Program[A]]` into `ProgAction[Program[B]]`, we can wrap it back in `Glue`, to obtain `Program[B]`.
+
+- We need some way to reach into the `ProgAction` and apply the function there.
+
+- Lets follow the types yet again:
+
+
+
+  </textarea>
+	<script
+		src="remark-0.5.9.min.js"
+		type="text/javascript">
+		
+	</script>
+	<script type="text/javascript">
+		var slideshow = remark.create({ highlightLanguage: 'scala', highlightStyle: 'github'});
+	</script>
+</body>
+</html>
