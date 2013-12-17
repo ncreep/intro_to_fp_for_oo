@@ -12,9 +12,9 @@ object OptionExamples {
     case class Code(code: String) {
       def tryCompile(): Option[Compiled] = choose(Some(Compiled(code)), None)
     }
-    
+
     case class Compiled(code: String)
-    
+
     def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
 
     val compiledCode: Option[Compiled] = getCoffee match {
@@ -26,9 +26,11 @@ object OptionExamples {
     }
 
     val compiledCode2: Option[Compiled] =
-      getCoffee flatMap (coffee =>
-        coffee.writeCode() flatMap (code =>
-          code.tryCompile()))
+      getCoffee flatMap { coffee =>
+        coffee.writeCode() flatMap { code =>
+          code.tryCompile()
+        }
+      }
 
     val compiledCode3: Option[Compiled] =
       for {
@@ -78,9 +80,9 @@ object OptionExamples {
     trait Compiled
     case class RealCompiled(code: String) extends Compiled
     case object NotCompiled extends Compiled
-    
+
     def getCoffee(): Coffee = choose(RealCoffee(3), NoCoffee)
-    
+
     val compiledCode = getCoffee().writeCode().tryCompile()
   }
 

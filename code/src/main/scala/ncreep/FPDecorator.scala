@@ -5,7 +5,7 @@ object FPDecorator {
                         coffeeConsumption: Coffee,
                         languages: Set[Language])
 
-  type ForProgrammer[A] = Programmer => A
+  type ForProg[A] = Programmer => A
 
   val makeCode: Programmer => (Coffee => LOC) =
     p =>
@@ -54,7 +54,7 @@ object FPDecorator {
         val b: B = toB(p)
         b
       }
-    
+
     def flatMap[B](g: A => Programmer => B): Programmer => B =
       p => g(f(p))(p)
 
@@ -66,9 +66,9 @@ object FPDecorator {
 
   def main(args: Array[String]): Unit = {
     val p = Programmer(
-        experience = 10, 
-        coffeeConsumption = 30, 
-        languages = Set("Scala", "Java", "PHP"))
+      experience = 10,
+      coffeeConsumption = 30,
+      languages = Set("Scala", "Java", "PHP"))
 
     val testMC = makeCode andThen testMakeCode
     val testDocPrice = price andThen testPrice andThen docPrice
@@ -111,11 +111,11 @@ object FPDecorator {
 
     val prod2 = makeCode andThen (mc => mc(50)) flatAndThen isProductive
 
-    val deadMake: Programmer => (Coffee => LOC) = 
+    val deadMake: Programmer => (Coffee => LOC) =
       makeCode flatAndThen deadProgrammer andThen testMakeCode
-      
-//    println(deadMake(p)(130))
-//    println(deadMake(p)(50))
+
+    //    println(deadMake(p)(130))
+    //    println(deadMake(p)(50))
     val dead3 = makeCode flatAndThen (mc => (p1 => (c: Coffee) => if (c > 4 * p1.coffeeConsumption) mc(c) else 0))
 
     val costEffective = for {
@@ -124,11 +124,12 @@ object FPDecorator {
     } yield mc andThen (loc => loc > p)
 
     val costEffective2: Programmer => (Coffee => Boolean) =
-      makeCode flatAndThen (mc =>
-        price andThen (pr =>
+      makeCode flatAndThen { mc =>
+        price andThen { pr =>
           mc andThen (loc => loc > pr)
-        ))
-    
+        }
+      }
+
     costEffective2(p)(30) // false
     costEffective2(p)(120) // true
 
@@ -148,7 +149,7 @@ object FPDecorator {
       makeCode(p)(40),
       polyAcc(p)("PHP")
     )
-//    x.foreach(println)
+    //    x.foreach(println)
   }
 
 }

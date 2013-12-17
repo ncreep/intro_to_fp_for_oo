@@ -1,0 +1,143 @@
+.remark-slide .remark-slide-content {
+	padding: 1em 1em;
+}
+
+pre code, .codeTable {
+	font-size: 0.75em;
+}
+
+a {
+	text-decoration: none;
+}
+
+.rightFloat {
+	float: right;
+}
+
+.leftFloat {
+	float: left;
+}
+
+.footnote {
+	margin-top: 30px;
+	font-size: 0.5em;
+}
+.xkcd img {
+	width: 230px;
+}
+.morpheus img {
+	width: 280px;
+	border-radius: 10px;
+}
+
+.boromir img {
+	width: 400px;
+	border-radius: 10px;
+}
+
+.toy_story img {
+	width: 400px;
+	border-radius: 10px;
+}
+
+body {
+	font-family: arial, sans-serif;
+	font-weight: 400;
+}
+
+h1,h2,h3 {
+	font-family: arial, sans-serif;
+	font-weight: 400;
+	margin: 5px 0px;
+}
+
+h1,h2 {
+	color: rgb(255, 255, 255);
+	background-color: rgb(76, 102, 164);
+	padding: 5px 10px;
+}
+
+h1 {
+	font-size: 2.5em;
+}
+
+h2 {
+	font-size: 1.8em;
+}
+
+h3 {
+	font-size: 1.6em;
+}
+
+body {
+	font-size: 1.5em;
+}
+
+.slide .content {
+	padding: 10px 90px !important;
+}
+
+#slideshow .no-highlight {
+	font-size: 1em !important;
+}
+
+blockquote {
+	font-style: italic;
+	margin: 0.25em 0;
+	padding: 0.25em 40px;
+	line-height: 1.45;
+	position: relative;
+}
+
+blockquote:before {
+	opacity: 0.8;
+	display: block;
+	content: "\201C";
+	font-size: 3em;
+	position: absolute;
+	left: -20px;
+	top: -20px;
+}
+
+blockquote cite {
+	opacity: 0.8;
+	font-size: 1em;
+	display: block;
+	margin-top: 5px;
+}
+
+blockquote cite:before {
+	content: "\2014 \2009";
+}
+
+/* Two-column layout */
+.left-column {
+	width: 50%;
+	float: left;
+}
+
+.right-column {
+	width: 50%;
+	float: right;
+}
+
+code {
+	-moz-border-radius: 5px;
+	-web-border-radius: 5px;
+	background: #e7e8e2;
+	border-radius: 5px;
+}
+
+.inverse {
+	background: #A60A17;
+}
+
+/* slides */
+.bg-red {
+	background: #A60A17;
+}
+
+.bg-dark {
+	color: white;
+	text-shadow: 0 0 20px #333;
+}

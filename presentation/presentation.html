@@ -1,126 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Underscore - December 13 Meetup</title>
+<title>Underscore - December 2013 Meetup</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link href='http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700,200' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
-
-    <style type="text/css" media="screen">
-      .remark-slide .remark-slide-content {
-          padding: 1em 1em;
-      }
-      
-      pre code, .codeTable {
-        font-size: 0.8em;
-      }
-      
-      .morpheus img {
-        width: 280px;
-        border-radius: 10px;
-      }  
-
-      .boromir img {
-        width: 400px;
-        border-radius: 10px;
-      }       
-      
-      body { 
-        font-family: arial, sans-serif;
-        font-weight: 400;
-      }
-      h1, h2, h3 {
-        font-family: arial, sans-serif;
-        font-weight: 400;
-        margin: 5px 0px;
-      }
-      
-      h1, h2 {
-        color: rgb(255, 255, 255);
-        background-color: rgb(76, 102, 164);
-        padding: 5px 10px;
-      }
-      h1 { font-size: 4em; }
-      h2 { font-size: 1.8em; }
-      h3 { font-size: 1.6em; }
-      body { font-size: 1.5em; }
-
-      .slide .content {
-        padding: 10px 90px !important;
-      }
-
-      #slideshow .no-highlight {
-        font-size: 1em !important;
-      }
-
-      blockquote {
-        font-style: italic;
-        margin: 0.25em 0;
-        padding: 0.25em 40px;
-        line-height: 1.45;
-        position: relative;
-      }
-
-      blockquote:before {
-        opacity: 0.8;
-        display: block;
-        content: "\201C";
-        font-size: 3em;
-        position: absolute;
-        left: -20px;
-        top: -20px;
-      }
-
-      blockquote cite {
-        opacity: 0.8;
-        font-size: 1em;
-        display: block;
-        margin-top: 5px;
-      }
- 
-      blockquote cite:before {
-        content: "\2014 \2009";
-      }
-
-     /* Two-column layout */
-    .left-column {
-      width: 50%;
-      float: left;
-    }
-    .right-column {
-      width: 50%;
-      float: right;
-    }
-
-    code {
-      -moz-border-radius: 5px;
-      -web-border-radius: 5px;
-      background: #e7e8e2;
-      border-radius: 5px;
-    }
-
-    .inverse {
-      background: #A60A17;
-    }
-
-    /* slides */
-
-    .bg-red {
-      background: #A60A17;
-    }
-    .bg-dark {
-      color: white;
-      text-shadow: 0 0 20px #333;
-    }
-    </style>
+<link rel='stylesheet' type='text/css' href='style.css' />
 </head>
 <body>
-    <textarea id="source">
+<textarea id="source">
 
 class: center, middle
 
-# Title
+# Introduction to Functional Programming for OO Programmers
 
+.leftFloat[Underscore - December 2013 Meetup]
+.rightFloat[Daniel Beskin]
+---
+
+class: center, middle
+
+.xkcd[![](xkcd.png)]
+
+_Functional programming combines the flexibility and power of abstract mathematics with the intuitive clarity of abstract mathematics._
+---
+
+## Introduction
+
+- This is going to be an introduction to some not so basic Functional programming concepts, from the point of view of an OO programmer.
+
+- I'll be assuming that you are comfortable with the more basic concepts like recursion and higher order functions.
+
+- If not, we have a quick warm up ahead of us, so I hope you do get up to speed.
+
+---
+
+## Why?
+
+- I'm guessing that if you came to this meetup, you probably have a reason to be interested in FP.
+
+- So I won't spend much time convincing you about it.
+
+- Here are some reasons:
+
+  * composability
+  * powerful abstractions
+  * immutability
+  * purity
+  * concurrency
+  * scalability
+  * testability
+  * elegance
+  * mathematical inclination
+  * ...
+  
+- Pick any one of those, or others, and just hold on to it during the lecture.
+  
+---
+
+## What?
+
+- A natural question in this context is: what is Functional programming?
+
+- Just as with Object Orientation, there is no real consensus on what that is.
+
+- For our purposes, it's just going to be a programming style that puts the usage of (pure) functions to the forefront.
+
+- Not a very useful definition, but that will have to do.
+
+---
+## How?
+
+- To make the whole thing closer to the OO world, we are going to pick several well-known OO design patterns and try to reimplement
+them using Functional style.
+
+- As a caveat, note that in Scala, being a hybrid OO/FP language, in some cases it might be actually  more appropriate to use a non-FP approach.
+
+- But we are going to ignore this for the purposes of this lecture.
+
+---
+class: middle
+
+_\- What are the design patterns that help structure functional systems?_
+
+_\- Design patterns? Hey everyone, look at the muggle try to get the wand to work!_
+
+.footnote[[http://sdt.bz/content/article.aspx?ArticleID=36534](http://sdt.bz/content/article.aspx?ArticleID=36534)]
 ---
 
 layout: true
@@ -145,6 +108,7 @@ while(bugsIter.hasNext) {
 }
 
 val features = featureBuffer.toList
+
 // => List(Feature(null), Feature(???), Feature(var x = 3))
 ```
 
@@ -208,7 +172,7 @@ Two common ways to deal with missing values in mainstream OO:
   - null 
   - null object pattern
 
-The first is ugly, the second is verbose
+The first is ugly, the second is verbose.
 ---
 
 We start with the ugly:
@@ -238,6 +202,7 @@ val compiledCode = {
     else code.tryCompile()
   }
 }
+
 // either 'null' or 'Compiled(3 coffee => code)'
 ```
 
@@ -264,6 +229,7 @@ case object NotCompiled extends Compiled
 def getCoffee(): Coffee = choose(RealCoffee(3), NoCoffee)
 
 val compiledCode = getCoffee().writeCode().tryCompile()
+
 // either 'NotCompiled' or 'RealCompiled(3 coffee => code)'
 ```
    
@@ -274,7 +240,7 @@ Null objects are safer, but require way too much boilerplate for every case. In 
 - we don't get any help from the compiler
 - there is no generic way to compose different null objects
 
-Let's look at the FP alternative, `Option`
+Let's look at the FP alternative, `Option`.
 
 ---
 
@@ -303,7 +269,7 @@ val compiledCode: Option[Compiled] = getCoffee match {
 
 // either 'None' or 'Some(Compiled(3 coffee => code))'
 ```
-That's not much better than explicit `null` checking (although safer)...
+That's not much better than explicit `null` checking (although safer).
 
 ---
 
@@ -323,9 +289,11 @@ case class Compiled(code: String)
 def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
 
 val compiledCode: Option[Compiled] = 
-  getCoffee flatMap (coffee =>
-    coffee.writeCode() flatMap (code =>
-      code.tryCompile()))
+  getCoffee flatMap { coffee =>
+    coffee.writeCode() flatMap { code =>
+      code.tryCompile()
+    }
+  }
       
 // either 'None' or 'Some(Compiled(3 coffee => code))'
 ```
@@ -351,7 +319,7 @@ Much nicer...
 layout: false
 class: center middle
 
-Now that we're all warmed up, we can move on to something more challenging...
+Now that we're all warmed up, we can move on to something more challenging
 
 .morpheus[![](morpheus.jpg)]
 
@@ -365,7 +333,7 @@ layout: true
 
 - Probably the most Scala-esque way to achieve this is the [stackable trait pattern](http://www.artima.com/scalazine/articles/stackable_trait_pattern.html).
 
-- But we'll stick to the more convetional version of this design pattern.
+- But we'll stick to the more convetional version of the pattern.
 
 ---
 
@@ -466,9 +434,9 @@ documentingPolyglot.acceptProject("PHP") // false
 
 ---
 
-- Now, let's look at this problem from a Functional perspective
+- Now, let's look at this problem from a Functional perspective.
 
-- We need to rephrase the problem in terms of functions that are separate from the data
+- We need to rephrase the problem in terms of functions that are separate from the data thy operate on.
 
 - Because of the implicit `this`, we can view method calls as:
 <table class="codeTable">
@@ -544,7 +512,7 @@ acceptProject(p)("PHP") // true
 
 ---
 
-Now the decorators
+The decorators:
 ```
 val testMakeCode: (Coffee => LOC) => (Coffee => LOC) =
   mc =>
@@ -704,10 +672,11 @@ We can also combine a number of `Programmer` functions:
 
 ```
 val costEffective: Programmer => (Coffee => Boolean) =
-  makeCode flatAndThen (mc =>
-    price andThen (pr =>
+  makeCode flatAndThen { mc =>
+    price andThen { pr =>
       mc andThen (loc => loc > pr)
-    ))
+    }
+  }
     
 costEffective2(p)(30) // false
 costEffective2(p)(120) // true
@@ -762,7 +731,7 @@ layout: true
 
 - Both patterns are pretty much lifted from FP, so we'll skip the OO implementation this time.
 
-- Scala has a number of ways of creating DSLs, e.g.: higher order functions, macros, string interpolators.
+- Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.
 
 - We'll try to come up with a way that works particularly well with separating the language from its interpretation.
 
@@ -912,15 +881,17 @@ case class Return[A](a: A) extends Program[A]
 - Let's see some examples:
 
 ```
-val drink: Program[Coffee] = Glue(
-    DrinkCoffee(3, 
-        coffee => Return(coffee)))
-        
-val drinkWrite: Program[Code] = Glue(
-    DrinkCoffee(1, 
-        coffee => Glue(
-            WriteCode(coffee, 
-                code => Return(code)))))
+val drink: Program[Coffee] =
+  Glue(
+    DrinkCoffee(3,
+      coffee => Return(coffee)))
+
+val drinkWrite: Program[Code] =
+  Glue(
+    DrinkCoffee(1,
+      coffee => Glue(
+        WriteCode(coffee,
+          code => Return(code)))))
 ```
 
 - Each `Program` snippet contains the response for the action wrapped in a `Return`.
@@ -934,9 +905,9 @@ val drinkWrite: Program[Code] = Glue(
 ```
 val drinkWrite: Program[Code]
 val compile: Code => Program[CompileResponse]
-val response: Program[CompileResponse] = drinkWrite next compile
+val drinkWriteCompile: Program[CompileResponse] = drinkWrite next compile
 
-val next: Program[A] => (A => Program[B]) => Program[B]
+def next[A, B]: Program[A] => (A => Program[B]) => Program[B]
 ```
 
 - `next` should reach into our program, fetch the `A` value, apply a function to it, and produce a new `Program`.
@@ -949,7 +920,7 @@ We code `next` as a method on `Program`. Start with the easy case, `Return`:
 sealed trait Program[+A] {
   def next[B](f: A => Program[B]): Program[B] = this match {
     case Return(a) => f(a)
-    case Glue(pa: ProgAction[A]) => ???
+    case Glue(pa: ProgAction[Program[A]]) => ???
   }
 }
 ```
@@ -958,13 +929,400 @@ sealed trait Program[+A] {
 
 - The `Glue` case is more difficult, because the `A` value is hidden inside a `ProgAction[Program[A]]`.
 
-- If we turn `ProgAction[Program[A]]` into `ProgAction[Program[B]]`, we can wrap it back in `Glue`, to obtain `Program[B]`.
-
 - We need some way to reach into the `ProgAction` and apply the function there.
 
-- Lets follow the types yet again:
+---
+
+- If we generalize the type a little, what we need is:
+```
+def map[A, B]: ProgAction[A] => (A => B) => ProgAction[B]
+```
+
+- Which reads as: reach into the `ProgAction`, apply the function there, and rewrap it back into a `ProgAction`.
+
+- With these types, there is only one way to implement this function.
+
+---
+
+- We do it as a method on `ProgAction`:
+
+```
+sealed trait ProgAction[+A] {
+  def map[B](f: A => B): ProgAction[B] = this match {
+    case DrinkCoffee(c, next: (Coffee => A)) => DrinkCoffee(c, next andThen f)
+    case WriteCode(c, next: (Code => A)) => WriteCode(c, next andThen f)
+    case Compile(c, next: (CompileResponse => A)) => Compile(c, next andThen f)
+    case CommitCode(c) => CommitCode(c)
+    case BangHeadOnKeyboard => BangHeadOnKeyboard
+  }
+}
+```
+
+- Any `ProgAction` that has a `next` function, just composes `f` after its own `next`.
+
+- The final `ProgAction`s ignore it altogether.
+
+---
+
+Now that we can reach into our `ProgAction`s, we can complete the definition of `next`:
+
+```
+sealed trait Program[+A] {
+  def next[B](f: A => Program[B]): Program[B] = this match {
+    case Return(a) => f(a)
+    case Glue(pa: ProgAction[Program[A]]) => {
+      val progActionB: ProgAction[Program[B]] = pa map { (p: Program[A]) =>
+        val pb: Program[B] = p next f
+        pb
+      }
+      Glue(progActionB)
+    }
+  }
+}
+```
+
+In the `Glue` case we recursively apply `f` until we either hit a `Return` or a final `ProgAction`.
+
+---
+
+Finally, we can compose our `ProgAction`s:
+
+```
+val write: Program[Code] = Glue(WriteCode(3, code => Return(code)))
+
+val compile: Code => Program[CompileResponse] =
+  code => Glue(Compile(code, compileResp => Return(compileResp)))
+  
+val writeCompile: Program[CompileResponse] = write next compile
+```
+
+- It works! 
+
+- Or at the very least it compiles, but that's most of what you need when you program by "following the types".
+
+- But those references to `Glue`s are quite annoying, let's try to hide them away.
+
+---
+
+We can factor out the `Glue`s into a bunch of primitive functions, one for every action we have:
+
+```
+def ret[A](a: A) = Return(a)
+
+val compile: Code => Program[CompileResponse] = 
+  code => Glue(Compile(code, cr => ret(cr)))
+  
+val writeCode: Coffee => Program[Code] = 
+  coffee => Glue(WriteCode(coffee, code => ret(code)))
+  
+val drinkCoffee: Cups => Program[Coffee] = 
+  cups => Glue(DrinkCoffee(cups, coffee => ret(coffee)))
+  
+val bangHeadOnKeyboard: Program[Nothing] = Glue(BangHeadOnKeyboard)
+
+val commitCode: Code => Program[Nothing] = code => Glue(CommitCode(code))
+```
+
+- There's a common pattern here, which can be factored into a separate function, I'll leave it as an exercise (you can see the solution in the repository). 
+
+---
+
+- We can create any `Program` we want using our primitives, the previous example becomes:
+
+```
+val writeCompile: Program[CompileResponse] = write(3) next compile
+```
+
+- And we can now write more complicated descriptions of programers:
+
+```
+val idealProgrammer: Program[Code] =
+  drinkCoffee(1) next writeCode next { code =>
+    compile(code) next { response =>
+      response match {
+        case WaitTime(_) => ret(code)
+        case Exception => idealProgrammer
+        case ScaryTypeException => idealProgrammer
+      }
+    }
+  }
+```
+
+- The ideal programmer just keeps writing code until it compiles and does not abuse coffee.
+
+---
+
+```
+val nervousProgrammer: Program[Code] =
+  drinkCoffee(1) next writeCode next { code =>
+    compile(code) next { response =>
+      response match {
+        case WaitTime(t) => drinkCoffee(3 * t) next (_ => ret(code))
+        case Exception => drinkCoffee(1) next (_ => nervousProgrammer)
+        case ScaryTypeException => bangHeadOnKeyboard
+      }
+    }
+  }
+```
+
+- The nervous programmer abuses coffee, without actually turning it into code...
+
+---
+
+- Now that we have a language, it would be a bit pointless if we don't do something with it. 
+
+- Let's hack up an interpreter for it. 
+
+---
+
+Our interpreter is just a pretty printer:
+
+```
+val codeToResponse = Map(
+  "java code" -> WaitTime(1),
+  "scala code" -> WaitTime(20),
+  "implicits spaghetti" -> WaitTime(400),
+  "null abuse" -> Exception,
+  "higher kinded madness" -> ScaryTypeException)
+
+def randomCode(): Code = Random.shuffle(codeToResponse.keys.toList).head
+  
+def print(p: Program[_]): Unit = p match {
+  case Return(a) => println(a)
+  case Glue(pa) => pa match {
+    case Compile(code, next) =>
+      println(s"Compile: '$code'")
+      print(next(codeToResponse(code)))
+    case WriteCode(cofee, next) =>
+      println(s"Write with $cofee coffee")
+      print(next(randomCode()))
+    case DrinkCoffee(cups, next) =>
+      println(s"Drink coffee: $cups")
+      print(next(cups * 3))
+    case BangHeadOnKeyboard => println("Bang head on keyboard")
+    case CommitCode(code) => println(s"Commit: '$code'")
+  }
+}
+```
+
+---
+
+We can try to run it on our programmers:
+```
+print(idealProgrammer next commitCode)
+```
+
+```asciidoc
+Drink coffee: 1
+Write with 3 coffee
+Compile: 'higher kinded madness'
+Drink coffee: 1
+Write with 3 coffee
+Compile: 'java code'
+Commit: 'java code'
+```
+
+```
+print(nervousProgrammer next commitCode)
+```
+
+```asciidoc
+Drink coffee: 1
+Write with 3 coffee
+Compile: 'null abuse'
+Drink coffee: 2
+Drink coffee: 1
+Write with 3 coffee
+Compile: 'higher kinded madness'
+Bang head on keyboard
+```
+
+---
+
+- In the same vein, we can write other kinds of interpreters.
+
+- You can see couple of other examples in the repository. 
+
+- One counts the amount of coffee the programmer consumes. 
+
+- The other fetches the code that the programmer produced.
+
+---
+layout: false
+
+##The interpreter pattern - summary
+
+- We have managed to define a small language using composable parts.
+
+- This sort of composability would be hard to achieve with OO techniques.
+
+- But may be overkill for simpler languages.
+
+- This technique is (way) more general than what we did here, we'll discuss it in a moment.
+
+---
+class: center, middle
+
+The heavy lifting is done, now let's step back to get some perspective
+
+.toy_story[![](toy_story.jpg)]
 
 
+---
+layout: true
+
+## Design patterns - redux
+
+---
+
+- Remember how way back on one of the first slides we dissed design patterns?
+
+- Let's drop the "design" and just look for patterns.
+
+- Do we see any in the different FP examples thus far?
+
+---
+
+Here's one:
+
+```
+type ForProg[A] = Programmer => A
+
+def flatMap[A, B]:     List[A]    => (A => List[B])    => List[B]
+def flatMap[A, B]:     Option[A]  => (A => Option[B])  => Option[B]
+def flatAndThen[A, B]: ForProg[A] => (A => ForProg[B]) => ForProg[B]
+def next[A, B]:        Program[A] => (A => Program[B]) => Program[B]
+```
+
+Fixing the commonality:
+
+```
+def flatMap[A, B]: M[A] => (A => M[B]) => M[B]
+```
+
+---
+
+Things like `M` actually have a name, which comes from abstract math, they are called Monads.
+
+- `Programmer => A` is an instance of the Reader monad.
+- `Program` is an instance of the Free monad.
+
+With the Free monad you can do a whole lot more than just interpreters, but that's a whole topic in itself.
+
+---
+
+Monads are a somewhat problematic topic. 
+Here are some excerpts from different Monad resources on the web:
+
+--
+
+- [monads are like elephants](http://james-iry.blogspot.com/2007/09/monads-are-elephants-part-1.html)
+
+--
+- [monads are like space suits](http://web.archive.org/web/20081206204420/http://www.loria.fr/~kow/monads/index.html)
+
+--
+- [monads are like monsters](http://www.haskell.org/pipermail/haskell-cafe/2006-November/019190.html)
+
+--
+- [monads are like burritos](http://blog.plover.com/prog/burritos.html)
+
+--
+- [monads are a spacesuite full of nuclear waste in the ocean next to a container of apples](http://koweycode.blogspot.co.il/2007/01/think-of-monad.html)
+
+--
+- [monads are not metaphors](http://www.codecommit.com/blog/ruby/monads-are-not-metaphors)
+
+--
+- [you could have invented monads! (and maybe you already have.)](http://blog.sigfpe.com/2006/08/you-could-have-invented-monads-and.html)
+
+--
+- [Bob the monadic lover](http://www.haskell.org/haskellwiki/Meet_Bob_The_Monadic_Lover)
+
+--
+- [A monad is a programmable semicolon](http://www.cs.ucsb.edu/~benh/162/slides/06-monads.pdf)
+
+--
+- [the monad tutorial fallacy](http://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/)
+
+--
+- [~~monads~~ warm fuzzy things](http://www.urbandictionary.com/define.php?term=warm%20fuzzy%20things)
+
+--
+- [a monad is just a monoid in the category of endofunctors](http://stackoverflow.com/questions/3870088/a-monad-is-just-a-monoid-in-the-category-of-endofunctors-whats-the-problem)
+
+---
+
+- So I won't be explaining monads in this lecture. 
+
+- But I will give you some motivation on why you should care about them.
+
+- Once you figure out that something is a monad, you can apply generic monad functions on it.
+
+- A concrete example in Scala is the `for` syntax.
+
+- The `for` syntax is provided for anything that can be regarded as a monad. 
+
+- Specifically, anything that supports `flatMap` (and `map`).
+
+- We can rewrite some of the code from before with `for` notation (the full code is in the repository).
+
+---
+
+Remember the clunky decorators from before?
+
+```
+val costEffective: Programmer => (Coffee => Boolean) =
+  makeCode flatAndThen { mc =>
+    price andThen { pr =>
+      mc andThen (loc => loc > pr)
+    }
+  }
+```
+
+Now we can write:
+
+```
+val costEffective = for {
+  mc <- makeCode
+  p <- price
+} yield mc andThen (loc => loc > p)
+```
+
+---
+
+Same goes for our `Program` examples. The nervous programmer can be rewritten as:
+
+```
+def nervousProgrammer: Program[Code] =
+  for {
+    code <- drinkCoffee(1) next writeCode
+    response <- compile(code)
+    finalCode <- response match {
+      case WaitTime(t) => drinkCoffee(3 * t) next (_ => ret(code))
+      case Exception => drinkCoffee(1) next (_ => nervousProgrammer)
+      case ScaryTypeException => bangHeadOnKeyboard
+    }
+  } yield finalCode
+```
+
+---
+
+- Monads are one of the many mathematical structures that are used in Functional programming.
+
+- Different code patterns, become mathematical structures.
+
+- These are the equivalents of design patterns in FP.
+
+- Looking around for these patterns, can greatly improve the design of our code.
+
+---
+layout: false
+class: center middle
+
+##... and we're done. Thank You!
+<br />
+##Questions?
 
   </textarea>
 	<script
