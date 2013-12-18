@@ -17,22 +17,14 @@ object OptionExamples {
 
     def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
 
-    val compiledCode: Option[Compiled] = getCoffee match {
-      case Some(coffee) => coffee.writeCode() match {
-        case Some(code) => code.tryCompile()
-        case None => None
-      }
-      case None => None
-    }
-
-    val compiledCode2: Option[Compiled] =
+    val compiledCode: Option[Compiled] =
       getCoffee flatMap { coffee =>
         coffee.writeCode() flatMap { code =>
           code.tryCompile()
         }
       }
 
-    val compiledCode3: Option[Compiled] =
+    val compiledCode2: Option[Compiled] =
       for {
         coffee <- getCoffee
         code <- coffee.writeCode()
@@ -87,6 +79,8 @@ object OptionExamples {
   }
 
   def main(args: Array[String]): Unit = {
+    println(Null.compiledCode)
     println(NullObject.compiledCode)
+    println(FP.compiledCode)
   }
 }

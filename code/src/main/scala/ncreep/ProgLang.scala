@@ -43,6 +43,7 @@ object ProgLang {
   }
   case class Glue[A](pa: ProgAction[Program[A]]) extends Program[A]
   case class Return[A](a: A) extends Program[A]
+
   def ret[A](a: A) = Return(a)
 
   val compile: Code => Program[CompileResponse] = code => Glue(Compile(code, cr => ret(cr)))
@@ -51,6 +52,7 @@ object ProgLang {
   val bangHeadOnKeyboard: Program[Nothing] = Glue(BangHeadOnKeyboard)
   val commitCode: Code => Program[Nothing] = code => Glue(CommitCode(code))
 
+  // factoring out a common function
   //  def withGlue[A](pa: ProgAction[A]): Program[A] = Glue(pa.map(ret))
   //  val compile: Code => Program[CompileResponse] = code => withGlue(Compile(code, identity))
   //  val writeCode: Coffee => Program[Code] = coffee => withGlue(WriteCode(coffee, identity))
@@ -66,7 +68,7 @@ object ProgLang {
     "higher kinded madness" -> ScaryTypeException)
 
   def randomCode(): Code = Random.shuffle(codeToResponse.keys.toList).head
-  
+
   def print(p: Program[_]): Unit = p match {
     case Return(a) => println(a)
     case Glue(pa) => pa match {
@@ -109,41 +111,24 @@ object ProgLang {
     }
   }
 
-  def idealProgrammer2: Program[Code] =
-    for {
-      code <- drinkCoffee(1) next writeCode
-      cr <- compile(code)
-      finalCode <- cr match {
-        case WaitTime(_) => ret(code)
-        case Exception => idealProgrammer2
-        case ScaryTypeException => idealProgrammer2
-      }
-    } yield finalCode
-
-  val drink2: Program[Coffee] = Glue(DrinkCoffee(3, coffee1 => Glue(DrinkCoffee(6, coffee2 => Return(coffee1 + coffee2)))))
-  val write: Program[Code] =
+  val drink: Program[Coffee] =
     Glue(
-      WriteCode(3,
-        code => Return(code)))
-  val compile2: Code => Program[CompileResponse] =
+      DrinkCoffee(3,
+        coffee => Return(coffee)))
+
+  val drinkWrite: Program[Code] =
+    Glue(
+      DrinkCoffee(1,
+        coffee => Glue(
+          WriteCode(coffee,
+            code => Return(code)))))
+
+  val write: Program[Code] = Glue(WriteCode(3, code => Return(code)))
+  val comp: Code => Program[CompileResponse] =
     code => Glue(Compile(code, compileResp => Return(compileResp)))
 
-  val writeCompile: Program[CompileResponse] = write next compile2
-  val writeCompile2: Program[CompileResponse] = write(3) next compile
-
-  def write(c: Coffee): Program[Code] = Glue(WriteCode(c, code => Return(code)))
-
-  val drinkWriteCompile: Program[CompileResponse] = Glue(DrinkCoffee(1, cof => Glue(WriteCode(cof, code => Glue(Compile(code, cr => Return(cr)))))))
-  val drinkWrite2: Program[Code] = Glue(DrinkCoffee(1, cof => Return(cof))) flatMap (cof => Glue(WriteCode(cof, code => Return(code))))
-
-  def makeCode: Program[Code] =
-    for {
-      cof <- drinkCoffee(1)
-      code <- writeCode(cof)
-    } yield code
-
-  def makeCode2: Program[Code] = drinkCoffee(1) flatMap (cof => writeCode(cof))
-  def makeCode3: Program[Code] = Glue(DrinkCoffee(1, cof => Glue(WriteCode(cof, code => Return(code)))))
+  val writeCompile: Program[CompileResponse] = write next comp
+  val writeCompile2: Program[CompileResponse] = writeCode(3) next compile
 
   val idealProgrammer: Program[Code] =
     drinkCoffee(1) next writeCode next { code =>
@@ -167,6 +152,17 @@ object ProgLang {
       }
     }
 
+  def idealProgrammer2: Program[Code] =
+    for {
+      code <- drinkCoffee(1) next writeCode
+      response <- compile(code)
+      finalCode <- response match {
+        case WaitTime(_) => ret(code)
+        case Exception => idealProgrammer2
+        case ScaryTypeException => idealProgrammer2
+      }
+    } yield finalCode
+
   def nervousProgrammer2: Program[Code] =
     for {
       code <- drinkCoffee(1) next writeCode
@@ -181,5 +177,6 @@ object ProgLang {
   def main(args: Array[String]): Unit = {
     print(nervousProgrammer next commitCode)
     println(getCode(idealProgrammer next commitCode))
+    println(countCoffee(idealProgrammer next commitCode))
   }
 }

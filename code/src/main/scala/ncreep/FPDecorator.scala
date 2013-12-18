@@ -37,6 +37,7 @@ object FPDecorator {
       l => !ap(l)
 
   val shouldHire: Money => Boolean = m => m < 50
+
   val isProductive: LOC => (Programmer => Boolean) = loc => p => loc > p.coffeeConsumption
 
   val bonus: Money => (Programmer => Money) =
@@ -45,6 +46,25 @@ object FPDecorator {
   val deadProgrammer: (Coffee => LOC) => Programmer => (Coffee => LOC) =
     mc => p =>
       c => if (c > 4 * p.coffeeConsumption) mc(c) else 0
+
+  val getProgrammer: Programmer => Programmer = p => p
+
+  val deadProgrammer2 = for {
+    mc <- makeCode
+    p1 <- getProgrammer
+  } yield (c: Coffee) => if (c > 4 * p1.coffeeConsumption) mc(c) else 0
+
+  val costEffective: Programmer => (Coffee => Boolean) =
+    makeCode flatAndThen { mc =>
+      price andThen { pr =>
+        mc andThen (loc => loc > pr)
+      }
+    }
+
+  val costEffective2 = for {
+    mc <- makeCode
+    p <- price
+  } yield mc andThen (loc => loc > p)
 
   implicit class Decorator[A](f: Programmer => A) {
     def flatAndThen[B](g: A => Programmer => B): Programmer => B =
@@ -55,14 +75,10 @@ object FPDecorator {
         b
       }
 
-    def flatMap[B](g: A => Programmer => B): Programmer => B =
-      p => g(f(p))(p)
+    def flatMap[B](g: A => Programmer => B): Programmer => B = flatAndThen(g)
 
     def map[B](g: A => B): Programmer => B = f andThen g
-    def >>[B](g: A => B): Programmer => B = f andThen g
   }
-
-  val getProgrammer: Programmer => Programmer = p => p
 
   def main(args: Array[String]): Unit = {
     val p = Programmer(
@@ -72,9 +88,6 @@ object FPDecorator {
 
     val testMC = makeCode andThen testMakeCode
     val testDocPrice = price andThen testPrice andThen docPrice
-    val testDocPrice2 = for {
-      m <- price
-    } yield m * 2
     val saneAcc = acceptProject andThen saneAccept
 
     val docPr = price andThen docPrice
@@ -93,15 +106,23 @@ object FPDecorator {
 
     val executiveDecision1: Programmer => Boolean =
       price andThen shouldHire
+
     val executiveDecision2: Programmer => Boolean =
       price andThen testPrice andThen shouldHire
+
     executiveDecision1(p) // true
     executiveDecision2(p) // false
 
-    val dead2 = for {
-      mc <- makeCode
-      p1 <- getProgrammer
-    } yield (c: Coffee) => if (c > 4 * p1.coffeeConsumption) mc(c) else 0
+    val withBonus: Programmer => Money =
+      price andThen testPrice flatAndThen bonus
+
+    withBonus(p) // 70
+
+    val deadMake: Programmer => (Coffee => LOC) =
+      makeCode flatAndThen deadProgrammer andThen testMakeCode
+
+    deadMake(p)(50) // 0
+    deadMake(p)(130) // 2850
 
     val prod = for {
       mc <- makeCode
@@ -111,45 +132,10 @@ object FPDecorator {
 
     val prod2 = makeCode andThen (mc => mc(50)) flatAndThen isProductive
 
-    val deadMake: Programmer => (Coffee => LOC) =
-      makeCode flatAndThen deadProgrammer andThen testMakeCode
-
-    //    println(deadMake(p)(130))
-    //    println(deadMake(p)(50))
     val dead3 = makeCode flatAndThen (mc => (p1 => (c: Coffee) => if (c > 4 * p1.coffeeConsumption) mc(c) else 0))
-
-    val costEffective = for {
-      mc <- makeCode
-      p <- price
-    } yield mc andThen (loc => loc > p)
-
-    val costEffective2: Programmer => (Coffee => Boolean) =
-      makeCode flatAndThen { mc =>
-        price andThen { pr =>
-          mc andThen (loc => loc > pr)
-        }
-      }
 
     costEffective2(p)(30) // false
     costEffective2(p)(120) // true
-
-    val withBonus: Programmer => Money = price andThen testPrice flatAndThen bonus
-    withBonus(p)
-
-    val x = List(
-      price(p),
-      makeCode(p)(40),
-      acceptProject(p)("PHP"),
-
-      testDocPrice(p),
-      testMC(p)(40),
-      saneAcc(p)("PHP"),
-
-      docPr(p),
-      makeCode(p)(40),
-      polyAcc(p)("PHP")
-    )
-    //    x.foreach(println)
   }
 
 }

@@ -7,6 +7,7 @@ object ListExamples {
   case class Feature(c: Code)
   
   val bugs: List[Bug] = List(Bug("null"), Bug("???"), Bug("var x = 3"))
+  
   val features: List[Feature] = bugs map (b => Feature(b.c))
   val features2: List[Feature] = for (b <- bugs) yield Feature(b.c)
   
@@ -31,6 +32,6 @@ object ListExamples {
 
   def main(args: Array[String]): Unit = {
     println(features)
-    println(allFeatures2)
+    println(allFeatures)
   }
 }

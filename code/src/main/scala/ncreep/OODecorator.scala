@@ -48,15 +48,6 @@ object OODecorator {
     override def acceptProject(l): Boolean = !super.acceptProject(l)
   }
 
-  /* with enough coffee a dead programmer can still produce code */
-  /* does not compile
-  class DeadProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
-    override def makeCode(c): LOC = 
-      if (c > 4 * p.coffeeConsumption) super.makeCode(c)
-      else 0
-  }
-  */
-
   def main(args: Array[String]): Unit = {
     val base = new BasicProgrammer(
       experience = 10,
@@ -77,21 +68,6 @@ object OODecorator {
     documentingPolyglot.price // 300
     documentingPolyglot.makeCode(40) // 100
     documentingPolyglot.acceptProject("PHP") // false
-
-    val x = List(
-      base.price,
-      base.makeCode(40),
-      base.acceptProject("PHP"),
-
-      saneDocTest.price,
-      saneDocTest.makeCode(40),
-      saneDocTest.acceptProject("PHP"),
-
-      documentingPolyglot.price,
-      documentingPolyglot.makeCode(40),
-      documentingPolyglot.acceptProject("PHP")
-    )
-    x.foreach(println)
   }
 
 }

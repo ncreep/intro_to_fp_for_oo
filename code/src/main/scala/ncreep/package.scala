@@ -6,6 +6,5 @@ package object ncreep {
   type Cups = Int
   type Language = String
   type Time = Int
-  type AboveCoffeeLimit = Boolean
   type Code = String
 }
