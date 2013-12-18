@@ -2,8 +2,31 @@
 	padding: 1em 1em;
 }
 
+.remark-slide-content {
+}
+
+
+
+body {
+	font-size: 1.5em;
+}
+
+p {
+	font-size: 1.1em;
+	margin: 0.5em 0;
+}
+
 pre code, .codeTable {
 	font-size: 0.75em;
+	background-color: #f8f8ff;
+}
+
+.remark-slide code {
+	background: #f8f8ff;
+}
+
+.smallCode {
+	font-size: 0.8em;
 }
 
 a {
@@ -22,11 +45,38 @@ a {
 	margin-top: 30px;
 	font-size: 0.5em;
 }
+
+ul {
+
+}
+
+.transition, .transition p {
+	color: rgb(255, 255, 255);
+}
+
+.transition {
+	background-color: rgb(76, 102, 164);
+	font-size: 0.8em;
+}
+
+.transition .remark-slide-number {
+	font-size: 1.25em;
+}
+
+.transition a {
+	color: rgb(255, 255, 255);
+}
+
+.transition img {
+	border:1px solid white;
+}
+
 .xkcd img {
 	width: 230px;
+	border-radius: 10px;
 }
 .morpheus img {
-	width: 280px;
+	width: 250px;
 	border-radius: 10px;
 }
 
@@ -45,6 +95,10 @@ body {
 	font-weight: 400;
 }
 
+ul {
+	margin-bottom: 1.3em;
+}
+
 h1,h2,h3 {
 	font-family: arial, sans-serif;
 	font-weight: 400;
@@ -54,6 +108,7 @@ h1,h2,h3 {
 h1,h2 {
 	color: rgb(255, 255, 255);
 	background-color: rgb(76, 102, 164);
+	border-radius: 10px;
 	padding: 5px 10px;
 }
 
@@ -69,9 +124,6 @@ h3 {
 	font-size: 1.6em;
 }
 
-body {
-	font-size: 1.5em;
-}
 
 .slide .content {
 	padding: 10px 90px !important;
