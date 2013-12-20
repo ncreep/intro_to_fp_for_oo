@@ -16,20 +16,22 @@ object ProgLangBroken {
   case object ScaryTypeException extends CompileResponse
 
   def main(args: Array[String]): Unit = {
-    val prog: ProgAction = DrinkCoffee(3,
-      coffee => WriteCode(coffee,
-        code => Compile(code,
-          compileResponse => compileResponse match {
-            case WaitTime(_) => CommitCode(code)
-            case _ => BangHeadOnKeyboard
-          })))
+    val prog: ProgAction =
+      DrinkCoffee(3,
+        coffee => WriteCode(coffee,
+          code => Compile(code,
+            compileResponse => compileResponse match {
+              case WaitTime(_) => CommitCode(code)
+              case _ => BangHeadOnKeyboard
+            })))
 
-    val drinkWrite: ProgAction = DrinkCoffee(3,
-      coffee => WriteCode(coffee,
-        code => ???
-      ))
+    val drinkWrite: ProgAction =
+      DrinkCoffee(3,
+        coffee => WriteCode(coffee,
+          code => ???
+        ))
 
-    val compile: Code => ProgAction = code => Compile(code,
-      compileResponse => ???)
+    val compile: Code => ProgAction =
+      code => Compile(code, compileResponse => ???)
   }
 }

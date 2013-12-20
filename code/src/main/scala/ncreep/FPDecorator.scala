@@ -69,9 +69,9 @@ object FPDecorator {
   implicit class Decorator[A](f: Programmer => A) {
     def flatAndThen[B](g: A => Programmer => B): Programmer => B =
       p => {
-        val fg: Programmer => (Programmer => B) = (f andThen g)
-        val toB: Programmer => B = fg(p)
-        val b: B = toB(p)
+        val a: A = f(p)
+        val pToB: Programmer => B = g(a)
+        val b: B = pToB(p)
         b
       }
 

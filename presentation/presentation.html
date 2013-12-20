@@ -10,24 +10,17 @@
 
 class: center, middle
 
-# Introduction to Functional Programming for OO Programmers
+# Introduction to Functional Programming for  <br /> OO Programmers
 
 .leftFloat[Underscore - December 2013 Meetup]
 .rightFloat[Daniel Beskin]
----
-
-class: center, middle, transition
-
-.xkcd[![](xkcd.png)]
-
-_Functional programming combines the flexibility and power of abstract mathematics with the intuitive clarity of abstract mathematics._
 ---
 
 ## Introduction
 
 - Goal: Introduce Functional Programming to OO developers.
 
-- The full code can be found on:  
+- The full code can be found at:  
 https://github.com/ncreep/december_13_underscore_meetup
 
 ???
@@ -39,6 +32,14 @@ https://github.com/ncreep/december_13_underscore_meetup
 - If not, we have a quick warm up ahead of us, so I hope you do get up to speed.
 
 ---
+
+class: center, middle, transition
+
+.xkcd[![](xkcd.png)]
+
+_Functional programming combines the flexibility and power of abstract mathematics with the intuitive clarity of abstract mathematics._
+---
+
 
 ## Why? What? How?
 
@@ -115,7 +116,6 @@ An FP (internal) iterator
 ``` 
 val features: List[Feature] = bugs map (b => Feature(b.c))
 
-// or we can use 'for' notation
 val features2: List[Feature] = for (b <- bugs) yield Feature(b.c)
 
 // => List(Feature(null), Feature(???), Feature(var x = 3))
@@ -135,17 +135,14 @@ val ps = List(p1, p2)
 val allFeatures: List[Feature] = 
   ps flatMap (p => p.assignedBugs map (b => Feature(b.c)))
 
+val allFeatures2: List[Feature] = 
+  for {
+    p <- ps
+    b <- p.assignedBugs
+  } yield Feature(b.c)
+
 // List(Feature(null), Feature(???), Feature(var x = 3), 
 //      Feature(foo.asInstanceOf[Bar]), Feature(1 = 2))
-```
-
-or
-
-```
-val allFeatures: List[Feature] = for {
-  p <- ps
-  b <- p.assignedBugs
-} yield Feature(b.c)
 ```
   
 ---
@@ -210,6 +207,9 @@ val compiledCode = getCoffee().writeCode().tryCompile()
 // either 'NotCompiled' or 'RealCompiled(3 coffee => code)'
 ```
 
+--
+
+The boilerplate
 ```
 trait Coffee { def writeCode(): Code }
 case class RealCoffee(amount: Int) extends Coffee {
@@ -264,7 +264,8 @@ case class Coffee(amount: Int) {
 }
 
 case class Code(code: String) {
-  def tryCompile(): Option[Compiled] = choose(Some(Compiled(code)), None)
+  def tryCompile(): Option[Compiled] = 
+    choose(Some(Compiled(code)), None)
 }
 
 case class Compiled(code: String)
@@ -422,13 +423,6 @@ Converting from OO to FP
 <tr><td>`prog.acceptProject(lang)`</td><td>&nbsp;`-->`&nbsp;</td><td>`acceptProject(prog, lang)`</td></tr>
 </table>
 
-With types
-<table class="codeTable">
-<tr><td>`prog.price(): Money`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => Money`</td></tr>
-<tr><td>`prog.makeCode(c: Coffee): LOC`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Coffee => LOC)`</td></tr>
-<tr><td>`prog.acceptProject(l: Language): Boolean`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Language => Boolean)`</td></tr>
-</table>
-
 ???
 
 - Now, let's look at this problem from a Functional perspective.
@@ -436,6 +430,15 @@ With types
 - We need to rephrase the problem in terms of functions that are separate from the data they operate on.
 
 - Because of the implicit `this`, we can view method calls as functions
+
+--
+
+With types
+<table class="codeTable">
+<tr><td>`prog.price(): Money`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => Money`</td></tr>
+<tr><td>`prog.makeCode(c: Coffee): LOC`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Coffee => LOC)`</td></tr>
+<tr><td>`prog.acceptProject(l: Language): Boolean`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Language => Boolean)`</td></tr>
+</table>
 
 ---
 
@@ -445,6 +448,8 @@ Chaining
 `-->`  
 `testPrice(docPrice(price(prog)))`
 ]
+
+--
 
 With types
 .codeTable[
@@ -503,15 +508,15 @@ acceptProject(p)("PHP") // true
 
 The decorators
 ```
-val testMakeCode: (Coffee => LOC) => (Coffee => LOC) =
-  mc =>
-    c => mc(c - 5) * 3
-
 val testPrice: Money => Money = 
   m => m * 2
 
 val docPrice: Money => Money = 
   m => m * 10
+  
+val testMakeCode: (Coffee => LOC) => (Coffee => LOC) =
+  mc =>
+    c => mc(c - 5) * 3
 
 val saneAccept: (Language => Boolean) => (Language => Boolean) =
   ap =>
@@ -559,14 +564,18 @@ polyAcc(p)("PHP") // false
 - Decoration is (almost) function composition:  
 `(Programmer => A) andThen (A => A)` `-->` `Programmer => A`
 
+???
+
+- But who said that we have to use the same `A` all over the place? Function composition works just as well with different types.
+
+--
+
 - Generified version:  
 `(Programmer => A) andThen (A => B)` `-->` `Programmer => B`
         
 
   
 ???
-
-- But who said that we have to use the same `A` all over the place? Function composition works just as well with different types.
 
 - To achieve this in the OO version we would have to change the `Programmer` interface for every new function that we want to define.
 ---
@@ -607,18 +616,6 @@ A new decorator type
 Programmer => A => (A => Programmer => B) --> Programmer => B
 ```
 
-```
-implicit class Decorator[A](f: Programmer => A) {
-  def flatAndThen[B](g: A => Programmer => B): Programmer => B =
-    p => {
-      val fg: Programmer => (Programmer => B) = (f andThen g)
-      val toB: Programmer => B = fg(p)
-      val b: B = toB(p)
-      b
-    }
-}
-```
-
 ???
 
 - It means that we need to have a `Programmer` available inside our decorators:
@@ -626,6 +623,21 @@ implicit class Decorator[A](f: Programmer => A) {
 - But the `Programmer` inside the chain should be the same one we started with:  
 `Programmer => A => (A => Programmer => B)` `-->` `Programmer => B`
 - Let's call the function that does this `flatAndThen`
+
+--
+```
+implicit class Decorator[A](f: Programmer => A) {
+  def flatAndThen[B](g: A => Programmer => B): Programmer => B =
+    p => {
+      val a: A = f(p)
+      val pToB: Programmer => B = g(a)
+      val b: B = pToB(p)
+      b
+    }
+}
+```
+
+???
 - With this function we can take any chain of the form:  
 `Programmer => A => (A => Programmer => B) => (B => Programmer => C) => ... => (C => Programmer => D)`  
 and turn into a single function `Programmer => D`
@@ -645,6 +657,8 @@ val withBonus: Programmer => Money =
 
 withBonus(p) // 70
 ```
+
+--
 
 ```
 // with enough coffee, even a dead programmer can produce code
@@ -670,8 +684,8 @@ val costEffective: Programmer => (Coffee => Boolean) =
     }
   }
     
-costEffective2(p)(30) // false
-costEffective2(p)(120) // true
+costEffective(p)(30) // false
+costEffective(p)(120) // true
 ```
 
 ???
@@ -695,6 +709,17 @@ This concludes the lighter part of the talk, brace yourself...
 
 .boromir[![](boromir.jpg)]
 
+???
+
+
+- The interpreter pattern is used when your language does not provide you with the right level of abstraction for the task at hand.  
+- So you create your own Domain-Specific Language and embed it in the host language.  
+- Nothing particularly OO about this. Typically, you represent the language as a `Composite`, and you interpret it using a `Visitor`.  
+- Both patterns are pretty much lifted from FP, so we'll skip the OO implementation this time.  
+- Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.  
+- We'll try to come up with a way that works particularly well with separating the language from its interpretation.  
+
+
 ---
 
 layout: true
@@ -703,6 +728,7 @@ layout: true
 
 ---
 
+--
 The domain:
 
 - Drink coffee
@@ -713,17 +739,10 @@ The domain:
 
 ???
 
-The interpreter pattern is used when your language does not provide you with the right level of abstraction for the task at hand.  
-So you create your own Domain-Specific Language and embed it in the host language.  
-Nothing particularly OO about this. Typically, you represent the language as a `Composite`, and you interpret it using a `Visitor`.  
-Both patterns are pretty much lifted from FP, so we'll skip the OO implementation this time.  
-Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.  
-We'll try to come up with a way that works particularly well with separating the language from its interpretation.  
-
-We would like to interconnect the different actions, so that one leads to another.  
-We also want to have interaction with the outer world.   
-For example, compilation produces some response from outside, and based on this response we choose the next action.  
-But we do not want our language to know anything about how to obtain the responses, the interpreter will be responsible for that.  
+- We would like to interconnect the different actions, so that one leads to another.  
+- We also want to have interaction with the outer world.   
+- For example, compilation produces some response from outside, and based on this response we choose the next action.  
+- But we do not want our language to know anything about how to obtain the responses, the interpreter will be responsible for that.  
 
 ---
 
@@ -786,13 +805,14 @@ and so on for another 200 lines
 A sample program
 
 ```
-val prog: ProgAction = DrinkCoffee(3,
-  coffee => WriteCode(coffee,
-    code => Compile(code,
-      compileResponse => compileResponse match {
-        case WaitTime(_) => CommitCode(code)
-        case _ => BangHeadOnKeyboard
-      })))
+val prog: ProgAction = 
+  DrinkCoffee(3,
+    coffee => WriteCode(coffee,
+      code => Compile(code,
+        compileResponse => compileResponse match {
+          case WaitTime(_) => CommitCode(code)
+          case _ => BangHeadOnKeyboard
+        })))
 ```
 
 ---
@@ -800,13 +820,14 @@ val prog: ProgAction = DrinkCoffee(3,
 Combining smaller programs
 
 ```
-val drinkWrite: ProgAction = DrinkCoffee(3,
-  coffee => WriteCode(coffee,
-    code => ???
-  ))
+val drinkWrite: ProgAction = 
+  DrinkCoffee(3,
+    coffee => WriteCode(coffee,
+      code => ???
+    ))
 
-val compile: Code => ProgAction = code => Compile(code,
-  compileResponse => ???)
+val compile: Code => ProgAction = 
+  code => Compile(code, compileResponse => ???)
   
 drinkWrite next compile
 ```
@@ -834,17 +855,20 @@ case class CommitCode(c: Code) extends ProgAction[Nothing]
 case object BangHeadOnKeyboard extends ProgAction[Nothing]
 ```
 
-```
-sealed trait Program[+A]
-case class Glue[A](pa: ProgAction[Program[A]]) extends Program[A]
-case class Return[A](a: A) extends Program[A]
-```
-
 ???
-
 - Now that the type is general, maybe we can use it to stub out arbitrary chains.
 
 - For this purpose, we are going to introduce some glue.
+
+--
+
+```
+sealed trait Program[+A]
+case class Return[A](a: A) extends Program[A]
+case class Glue[A](pa: ProgAction[Program[A]]) extends Program[A]
+```
+
+???
 
 - A `Program` is just a wrapper around some value of type `A`.
 
@@ -884,6 +908,12 @@ val drinkWriteCompile: Program[CompileResponse] = drinkWrite next compile
 def next[A, B]: Program[A] => (A => Program[B]) => Program[B]
 ```
 
+???
+
+- Using the language of `Program`, we have the following types:
+- `next` should reach into our program, fetch the `A` value, apply a function to it, and produce a new `Program`.
+
+--
 
 `next` implementation
 
@@ -898,9 +928,6 @@ sealed trait Program[+A] {
 
 ???
 
-- Using the language of `Program`, we have the following types:
-- `next` should reach into our program, fetch the `A` value, apply a function to it, and produce a new `Program`.
-
 - We code `next` as a method on `Program`. Start with the easy case, `Return`.
 - If we see a `Return`, we unwrap it, apply the function and return its result.
 - The `Glue` case is more difficult, because the `A` value is hidden inside a `ProgAction[Program[A]]`.
@@ -912,6 +939,14 @@ Operating inside `ProgAction`
 ```
 def map[A, B]: ProgAction[A] => (A => B) => ProgAction[B]
 ```
+
+???
+
+- We can generalize the type a little.
+- Which reads as: reach into the `ProgAction`, apply the function there, and rewrap it back into a `ProgAction`.
+- With these types, there is only one way to implement this function.
+
+--
 
 ```
 sealed trait ProgAction[+A] {
@@ -927,10 +962,6 @@ sealed trait ProgAction[+A] {
 
 ???
 
-- We can generalize the type a little.
-- Which reads as: reach into the `ProgAction`, apply the function there, and rewrap it back into a `ProgAction`.
-- With these types, there is only one way to implement this function.
-
 - We do it as a method on `ProgAction`:
 - Any `ProgAction` that has a `next` function, just composes `f` after its own `next`.
 - The final `ProgAction`s ignore it altogether.
@@ -944,10 +975,11 @@ sealed trait Program[+A] {
   def next[B](f: A => Program[B]): Program[B] = this match {
     case Return(a) => f(a)
     case Glue(pa: ProgAction[Program[A]]) => {
-      val progActionB: ProgAction[Program[B]] = pa map { (p: Program[A]) =>
-        val pb: Program[B] = p next f
-        pb
-      }
+      val progActionB: ProgAction[Program[B]] =
+        pa map { (p: Program[A]) =>
+          val pb: Program[B] = p next f
+          pb
+        }
       Glue(progActionB)
     }
   }
@@ -963,12 +995,14 @@ sealed trait Program[+A] {
 
 Composing `Program`s
 ```
-val write: Program[Code] = Glue(WriteCode(3, code => Return(code)))
+val write: Program[Code] = 
+  Glue(WriteCode(3, code => Return(code)))
 
 val compile: Code => Program[CompileResponse] =
   code => Glue(Compile(code, compileResp => Return(compileResp)))
   
-val writeCompile: Program[CompileResponse] = write next compile
+val writeCompile: Program[CompileResponse] = 
+  write next compile
 ```
 
 
@@ -986,18 +1020,20 @@ The `Program` primitives
 ```
 def ret[A](a: A) = Return(a)
 
-val compile: Code => Program[CompileResponse] = 
-  code => Glue(Compile(code, cr => ret(cr)))
+val drinkCoffee: Cups => Program[Coffee] = 
+  cups => Glue(DrinkCoffee(cups, coffee => ret(coffee)))
   
 val writeCode: Coffee => Program[Code] = 
   coffee => Glue(WriteCode(coffee, code => ret(code)))
   
-val drinkCoffee: Cups => Program[Coffee] = 
-  cups => Glue(DrinkCoffee(cups, coffee => ret(coffee)))
+val compile: Code => Program[CompileResponse] = 
+  code => Glue(Compile(code, cr => ret(cr)))
   
-val bangHeadOnKeyboard: Program[Nothing] = Glue(BangHeadOnKeyboard)
+val bangHeadOnKeyboard: Program[Nothing] = 
+  Glue(BangHeadOnKeyboard)
 
-val commitCode: Code => Program[Nothing] = code => Glue(CommitCode(code))
+val commitCode: Code => Program[Nothing] = 
+  code => Glue(CommitCode(code))
 ```
 
 ???
@@ -1012,6 +1048,25 @@ Examples
 val writeCompile: Program[CompileResponse] = writeCode(3) next compile
 ```
 
+
+???
+
+- We can create any `Program` we want using our primitives.
+
+- And we can now write more complicated descriptions of programmers.
+
+- The ideal programmer just keeps writing code until it compiles and does not abuse coffee.
+
+- The nervous programmer abuses coffee, without actually turning it into code...
+
+- Now that we have a language, it would be a bit pointless if we don't do something with it. 
+
+- Let's hack up an interpreter for it. 
+
+- Our interpreter is just a pretty printer.
+
+--
+
 ```
 val idealProgrammer: Program[Code] =
   drinkCoffee(1) next writeCode next { code =>
@@ -1025,67 +1080,55 @@ val idealProgrammer: Program[Code] =
   }
 ```
 
+--
+
 ```
 val nervousProgrammer: Program[Code] =
   drinkCoffee(1) next writeCode next { code =>
     compile(code) next { response =>
       response match {
         case WaitTime(t) => drinkCoffee(3 * t) next (_ => ret(code))
-        case Exception => drinkCoffee(1) next (_ => nervousProgrammer)
+        case Exception => drinkCoffee(2) next (_ => nervousProgrammer)
         case ScaryTypeException => bangHeadOnKeyboard
       }
     }
   }
 ```
 
-???
-
-- We can create any `Program` we want using our primitives.
-
-- And we can now write more complicated descriptions of programmers.
-
-- The ideal programmer just keeps writing code until it compiles and does not abuse coffee.
-
-- The nervous programmer abuses coffee, without actually turning it into code...
 
 ---
 
 A pretty printer
 
 ```
+def print(p: Program[_]): Unit = p match {
+  case Return(a) => println(a)
+  case Glue(pa) => pa match {
+    case DrinkCoffee(cups, next) =>
+      println(s"Drink coffee: $cups")
+      print(next(cups * 3))
+    case WriteCode(cofee, next) =>
+      println(s"Write with $cofee coffee")
+      print(next(randomCode()))
+    case Compile(code, next) =>
+      println(s"Compile: '$code'")
+      print(next(codeToResponse(code)))
+    case CommitCode(code) => println(s"Commit: '$code'")
+    case BangHeadOnKeyboard => println("Bang head on keyboard")
+  }
+}
+
+def randomCode(): Code = Random.shuffle(codeToResponse.keys.toList).head
+
 val codeToResponse = Map(
   "java code" -> WaitTime(1),
   "scala code" -> WaitTime(20),
   "implicits spaghetti" -> WaitTime(400),
   "null abuse" -> Exception,
   "higher kinded madness" -> ScaryTypeException)
-
-def randomCode(): Code = Random.shuffle(codeToResponse.keys.toList).head
-  
-def print(p: Program[_]): Unit = p match {
-  case Return(a) => println(a)
-  case Glue(pa) => pa match {
-    case Compile(code, next) =>
-      println(s"Compile: '$code'")
-      print(next(codeToResponse(code)))
-    case WriteCode(cofee, next) =>
-      println(s"Write with $cofee coffee")
-      print(next(randomCode()))
-    case DrinkCoffee(cups, next) =>
-      println(s"Drink coffee: $cups")
-      print(next(cups * 3))
-    case BangHeadOnKeyboard => println("Bang head on keyboard")
-    case CommitCode(code) => println(s"Commit: '$code'")
-  }
-}
 ```
 
-???
-- Now that we have a language, it would be a bit pointless if we don't do something with it. 
 
-- Let's hack up an interpreter for it. 
-
-- Our interpreter is just a pretty printer.
 
 ---
 
@@ -1166,13 +1209,19 @@ def flatAndThen[A, B]: ForProg[A] => (A => ForProg[B]) => ForProg[B]
 def next[A, B]:        Program[A] => (A => Program[B]) => Program[B]
 ```
 
+--
+
 ```
 def flatMap[A, B]: M[A] => (A => M[B]) => M[B]
 ```
 
+--
+
+Monads!
+
 - `Programmer => A` is an instance of the Reader monad.
 
-- `Program` is an instance of the Free monad.
+- `Program[A]` is an instance of the Free monad.
 
 ???
 
@@ -1198,7 +1247,7 @@ Monads on the web:
 - [Monads are like burritos](http://blog.plover.com/prog/burritos.html)
 
 --
-- [Monads are like a spacesuite full of nuclear waste in the ocean next to a container of apples](http://koweycode.blogspot.co.il/2007/01/think-of-monad.html)
+- [Monads are like a space suit full of nuclear waste in the ocean next to a container of apples](http://koweycode.blogspot.co.il/2007/01/think-of-monad.html)
 
 --
 - [Monads are not metaphors](http://www.codecommit.com/blog/ruby/monads-are-not-metaphors)
@@ -1275,7 +1324,7 @@ def nervousProgrammer: Program[Code] =
 layout: false
 class: center middle, transition
 
-##... and we're done. Thank You!
+##...and we're done. Thank you!
 ##Questions?
 
   </textarea>
