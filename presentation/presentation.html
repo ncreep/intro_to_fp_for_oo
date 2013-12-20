@@ -1334,7 +1334,8 @@ class: center middle, transition
 		
 	</script>
 	<script type="text/javascript">
-		var slideshow = remark.create({ highlightLanguage: 'scala', highlightStyle: 'github'});
+    var slideshow = remark.create({ highlightLanguage: 'scala', highlightStyle: 'github'});
+    document.addEventListener('click', function (e) { slideshow.gotoNextSlide() }, false);
 	</script>
 </body>
 </html>
