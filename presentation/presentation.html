@@ -8,9 +8,9 @@
 <body>
 <textarea id="source">
 
-class: center, middle
+class: center, middle, transition, intro
 
-# Introduction to Functional Programming for  <br /> OO Programmers
+# Introduction to <br /> Functional Programming for  <br /> OO Programmers
 
 .leftFloat[Underscore - December 2013 Meetup]
 .rightFloat[Daniel Beskin]
@@ -271,6 +271,10 @@ case class Code(code: String) {
 case class Compiled(code: String)
 ```
 
+???
+
+The `flatMap`s let us dig into the optional values and manipulate their contents.
+
 ---
 
 Using `for` notation
@@ -304,24 +308,28 @@ layout: true
 
 ---
 
-A model of a programmer
-
-```
-trait Programmer {
-  def makeCode(coffee: Coffee): LOC
-  def price: Money
-  def acceptProject(l: Language): Boolean
-}
-```
-
-
 ???
 
 - The decorator pattern is used to create different combinations of object behaviors.
 
 - Probably the most Scala-esque way to achieve this is the [stackable trait pattern](http://www.artima.com/scalazine/articles/stackable_trait_pattern.html).
 
-- But we'll stick to the more convetional version of the pattern.
+- But we'll stick to the more conventional version of the pattern.
+
+---
+
+A model of a programmer
+
+```
+trait Programmer {
+  def price: Money
+  def makeCode(coffee: Coffee): LOC
+  def acceptProject(l: Language): Boolean
+}
+```
+
+
+
 
 ---
 
@@ -331,12 +339,12 @@ An implementation
 class BasicProgrammer(experience: XPPoints,
                       coffeeConsumption: Coffee,
                       languages: Set[Language]) extends Programmer {
+                      
+  def price: Money = experience * languages.size
 
   /* more coffee -> more code */
   def makeCode(c: Coffee): LOC =
     experience * math.max(0, c - coffeeConsumption)
-
-  def price: Money = experience * languages.size
 
   def acceptProject(l: Language): Boolean = languages(l)
 }
@@ -344,8 +352,8 @@ class BasicProgrammer(experience: XPPoints,
 
 ```
 abstract class ProgrammerDecorator(p: Programmer) extends Programmer {
-  def makeCode(c: Coffee): LOC = p.makeCode(c)
   def price: Money = p.price
+  def makeCode(c: Coffee): LOC = p.makeCode(c)
   def acceptProject(l: Language): Boolean = p.acceptProject(l)
 }
 ```
@@ -361,8 +369,8 @@ Concrete decorators
 ```
 /* a programmer that writes tests */
 class TestingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
-  override def makeCode(c: Coffee): LOC = super.makeCode(c - 5) * 3
   override def price: Money = super.price * 2
+  override def makeCode(c: Coffee): LOC = super.makeCode(c - 5) * 3
 }
 
 /* a programmer that writes documentation */
@@ -479,11 +487,11 @@ case class Programmer(experience: XPPoints,
 ```
 
 ```
-val makeCode: Programmer => (Coffee => LOC) =
-  p => c => p.experience * math.max(0, c - p.coffeeConsumption)
-
 val price: Programmer => Money =
   p => p.experience * p.languages.size
+
+val makeCode: Programmer => (Coffee => LOC) =
+  p => c => p.experience * math.max(0, c - p.coffeeConsumption)
 
 val acceptProject: Programmer => (Language => Boolean) =
   p => l => p.languages(l)
@@ -532,8 +540,8 @@ val polyAccept: (Language => Boolean) => (Language => Boolean) =
 Using it
 
 ```
-val testMC = makeCode andThen testMakeCode
 val testDocPrice = price andThen testPrice andThen docPrice
+val testMC = makeCode andThen testMakeCode
 val saneAcc = acceptProject andThen saneAccept
 
 val docPr = price andThen docPrice
@@ -709,6 +717,16 @@ This concludes the lighter part of the talk, brace yourself...
 
 .boromir[![](boromir.jpg)]
 
+
+---
+
+layout: true
+
+## Interpreter Pattern
+
+---
+
+
 ???
 
 
@@ -719,14 +737,6 @@ This concludes the lighter part of the talk, brace yourself...
 - Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.  
 - We'll try to come up with a way that works particularly well with separating the language from its interpretation.  
 
-
----
-
-layout: true
-
-## Interpreter Pattern
-
----
 
 --
 The domain:
@@ -756,7 +766,9 @@ case class WriteCode(c: Coffee, next: Code => ProgAction) extends ProgAction
 case class Compile(c: Code, next: CompileResponse => ProgAction) extends ProgAction
 case class CommitCode(c: Code) extends ProgAction
 case object BangHeadOnKeyboard extends ProgAction
+```
 
+```
 sealed trait CompileResponse
 
 case class WaitTime(t: Time) extends CompileResponse
@@ -1335,7 +1347,7 @@ class: center middle, transition
 	</script>
 	<script type="text/javascript">
     var slideshow = remark.create({ highlightLanguage: 'scala', highlightStyle: 'github'});
-    document.addEventListener('click', function (e) { slideshow.gotoNextSlide() }, false);
+    //document.addEventListener('click', function (e) { slideshow.gotoNextSlide() }, false);
 	</script>
 </body>
 </html>
