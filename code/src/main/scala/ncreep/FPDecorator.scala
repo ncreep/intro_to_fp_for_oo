@@ -51,20 +51,22 @@ object FPDecorator {
 
   val deadProgrammer2 = for {
     mc <- makeCode
-    p1 <- getProgrammer
-  } yield (c: Coffee) => if (c > 4 * p1.coffeeConsumption) mc(c) else 0
+    p <- getProgrammer
+  } yield (c: Coffee) => if (c > 4 * p.coffeeConsumption) mc(c) else 0
 
-  val costEffective: Programmer => (Coffee => Boolean) =
+  val costEffective: Programmer => Boolean =
     makeCode flatAndThen { mc =>
-      price andThen { pr =>
-        mc andThen (loc => loc > pr)
+      price flatAndThen { pr =>
+        (p: Programmer) => mc(p.coffeeConsumption) > pr
       }
     }
 
-  val costEffective2 = for {
-    mc <- makeCode
-    p <- price
-  } yield mc andThen (loc => loc > p)
+  val costEffective2: Programmer => Boolean =
+    for {
+      mc <- makeCode
+      pr <- price
+      p <- getProgrammer
+    } yield mc(p.coffeeConsumption) > pr
 
   implicit class Decorator[A](f: Programmer => A) {
     def flatAndThen[B](g: A => Programmer => B): Programmer => B =
@@ -134,8 +136,7 @@ object FPDecorator {
 
     val dead3 = makeCode flatAndThen (mc => (p1 => (c: Coffee) => if (c > 4 * p1.coffeeConsumption) mc(c) else 0))
 
-    costEffective2(p)(30) // false
-    costEffective2(p)(120) // true
+    costEffective(p) // false
   }
 
 }
