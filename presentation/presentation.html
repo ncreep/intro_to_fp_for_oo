@@ -255,6 +255,12 @@ val compiledCode: Option[Compiled] =
 // either 'None' or 'Some(Compiled(3 coffee => code))'
 ```
 
+???
+
+The `flatMap`s let us dig into the optional values and manipulate their contents.
+
+--
+
 ```
 def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
 
@@ -271,9 +277,7 @@ case class Code(code: String) {
 case class Compiled(code: String)
 ```
 
-???
 
-The `flatMap`s let us dig into the optional values and manipulate their contents.
 
 ---
 
