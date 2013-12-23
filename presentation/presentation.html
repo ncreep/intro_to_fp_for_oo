@@ -37,7 +37,7 @@ class: center, middle, transition
 
 .xkcd[![](xkcd.png)]
 
-_Functional programming combines the flexibility and power of abstract mathematics with the intuitive clarity of abstract mathematics._
+Functional programming combines the flexibility and power of abstract mathematics with the intuitive clarity of abstract mathematics.
 ---
 
 
@@ -76,9 +76,9 @@ them using Functional style.
 ---
 class: middle, transition
 
-_\- What are the design patterns that help structure functional systems?_
+\- What are the design patterns that help structure functional systems?
 
-_\- Design patterns? Hey everyone, look at the muggle try to get the wand to work!_
+\- Design patterns? Hey everyone, look at the muggle try to get the wand to work!
 
 .footnote[[http://sdt.bz/content/article.aspx?ArticleID=36534](http://sdt.bz/content/article.aspx?ArticleID=36534)]
 ---
@@ -633,6 +633,8 @@ Programmer => A => (A => Programmer => B) --> Programmer => B
 - Let's call the function that does this `flatAndThen`
 
 --
+
+Follow the types
 ```
 implicit class Decorator[A](f: Programmer => A) {
   def flatAndThen[B](g: A => Programmer => B): Programmer => B =
