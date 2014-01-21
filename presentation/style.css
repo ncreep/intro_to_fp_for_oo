@@ -16,8 +16,31 @@ p {
 	margin: 0.7em 0 0.4em 0;
 }
 
+code {
+	-moz-border-radius: 5px;
+	-web-border-radius: 5px;
+	border-radius: 5px;
+}
+
+pre code .keyword {
+  color: #458 !important;
+}
+
+pre code .title {
+  color: #5471b7 !important;
+}
+
+pre code .params {
+  color: #000000 !important;
+}
+
+code {
+  font-weight: bold;
+}
+
 pre code, .codeTable {
-	font-size: 0.85em;
+	font-size: 0.88em;
+//	font-size: 0.85em;
 	background-color: #f8f8ff;
 }
 
@@ -185,13 +208,6 @@ blockquote cite:before {
 .right-column {
 	width: 50%;
 	float: right;
-}
-
-code {
-	-moz-border-radius: 5px;
-	-web-border-radius: 5px;
-	background: #e7e8e2;
-	border-radius: 5px;
 }
 
 .inverse {
