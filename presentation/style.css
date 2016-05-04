@@ -5,33 +5,34 @@
 .remark-slide-content {
 }
 
-
-
 body {
 	font-size: 1.5em;
 }
 
 p {
-	font-size: 1.1em;
+	font-size: 1.2em;
 	margin: 0.7em 0 0.4em 0;
 }
 
 code {
-	-moz-border-radius: 5px;
-	-web-border-radius: 5px;
-	border-radius: 5px;
+	font-size: 0.88em;
+	background-color: #FFFFFF !important;
 }
 
-pre code .keyword {
-  color: #458 !important;
+.remark-code {
+	font-size: 0.85em;
 }
 
-pre code .title {
-  color: #5471b7 !important;
-}
-
-pre code .params {
+.hljs-title {
   color: #000000 !important;
+}
+
+.hljs-params {
+  color: #000000 !important;
+}
+
+.hljs-magula .hljs-comment {
+	color: #676767;
 }
 
 code {
@@ -39,16 +40,19 @@ code {
 }
 
 pre code, .codeTable {
-	font-size: 0.88em;
-	background-color: #f8f8ff;
+	background-color: #FFFFFF;
+}
+
+.codeTable {
+	font-size: 0.95em;
 }
 
 .remark-slide code {
-	background: #f8f8ff;
+	background: #FFFFFF;
 }
 
-.smallCode {
-	font-size: 0.8em;
+.smallCode pre div {
+	font-size: 0.85em; 
 }
 
 a {
@@ -56,12 +60,12 @@ a {
 }
 
 .rightFloat {
-	margin-top: 10.8em;
+	margin-top: 8.0em;
 	float: right;
 }
 
 .leftFloat {
-	margin-top: 10.8em;
+	margin-top: 8.0em;
 	float: left;
 }
 
@@ -89,7 +93,7 @@ ul {
 	line-height: 1.7em;
 }
 
-.remark-slide-number { 
+.remark-slide-number {
 	display: none;
 }
 
@@ -135,31 +139,36 @@ ul {
 	margin-bottom: 1.3em;
 }
 
+li {
+	margin-top: 15px;
+}
+
+
 h1,h2,h3 {
 	font-family: arial, sans-serif;
-	font-weight: 400;
+	font-weight: bold;
 	margin: 5px 0px;
 }
 
-h1,h2 {
+h1 {
 	color: rgb(255, 255, 255);
 	background-color: rgb(76, 102, 164);
 	border-radius: 10px;
 	padding: 5px 10px;
 }
 
-h1 {
+.remark-slide-content h1 {
 	font-size: 2.5em;
 }
 
-h2 {
-	font-size: 1.8em;
-}
-
-h3 {
+.remark-slide-content h2 {
 	font-size: 1.6em;
+	margin-bottom: 20px;
 }
 
+.remark-slide-content h3 {
+	font-size: 1.0em;
+}
 
 .slide .content {
 	padding: 10px 90px !important;
@@ -167,6 +176,14 @@ h3 {
 
 #slideshow .no-highlight {
 	font-size: 1em !important;
+}
+
+.remark-notes li {
+	margin: 0px;
+}
+
+.remark-notes {
+	font-size: 0.7em
 }
 
 blockquote {
@@ -196,29 +213,4 @@ blockquote cite {
 
 blockquote cite:before {
 	content: "\2014 \2009";
-}
-
-/* Two-column layout */
-.left-column {
-	width: 50%;
-	float: left;
-}
-
-.right-column {
-	width: 50%;
-	float: right;
-}
-
-.inverse {
-	background: #A60A17;
-}
-
-/* slides */
-.bg-red {
-	background: #A60A17;
-}
-
-.bg-dark {
-	color: white;
-	text-shadow: 0 0 20px #333;
 }

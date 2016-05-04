@@ -10,7 +10,7 @@
 
 class: center, middle, transition, intro
 
-# Introduction to <br /> Functional Programming for  <br /> OO Programmers
+# Introduction to <br /> Functional Design for  <br /> OO Programmers
 
 .leftFloat[]
 .rightFloat[Daniel Beskin]
@@ -18,9 +18,11 @@ class: center, middle, transition, intro
 
 ## Introduction
 
-- Goal: Introduce Functional Programming to OO developers.
+- We'll be talking about Functional Programming and Design
 
-- The full code can be found at:  
+- I'll be assuming that you're familiar with Object Oriented Design
+
+- The full code can be found at:
 https://github.com/ncreep/intro_to_fp_for_oo
 ???
 
@@ -53,13 +55,13 @@ Functional programming combines the flexibility and power of abstract mathematic
 
 - What?
   * Putting the usage of (pure) functions to the forefront
-  
+
 - How?
   * Compare FP solutions to existing OO design patterns
-  
+
 ???
 
-- I'm guessing that if you came to this meetup, you probably have a reason to be interested in FP.
+- I'm guessing that if you came here, you probably have a reason to be interested in FP.
 - So I won't spend much time convincing you about it.
 - Pick any one of the reasons here, or others, and just hold on to it during the lecture.
 - A natural question in this context is: what is Functional programming?
@@ -70,7 +72,7 @@ Functional programming combines the flexibility and power of abstract mathematic
 them using Functional style.
 - As a caveat, note that in Scala, being a hybrid OO/FP language, in some cases it might be actually  more appropriate to use a non-FP approach.
 - But we are going to ignore this for the purposes of this lecture.
-  
+
 
 ---
 class: middle, transition
@@ -90,7 +92,7 @@ layout: true
 
 An OO iterator
 
-``` 
+```
 case class Bug(c: Code)
 case class Feature(c: Code)
 
@@ -108,11 +110,12 @@ val features = featureBuffer.toList
 // => List(Feature(null), Feature(???), Feature(var x = 3))
 ```
 
+
 ---
 
 An FP (internal) iterator
 
-``` 
+```
 val features: List[Feature] = bugs map (b => Feature(b.c))
 
 val features2: List[Feature] = for (b <- bugs) yield Feature(b.c)
@@ -130,20 +133,20 @@ case class Programmer(assignedBugs: List[Bug])
 val p1 = Programmer(List(Bug("null"), Bug("???"), Bug("var x = 3")))
 val p2 = Programmer(List(Bug("foo.asInstanceOf[Bar]"), Bug("1 = 2")))
 val ps = List(p1, p2)
-  
-val allFeatures: List[Feature] = 
+
+val allFeatures: List[Feature] =
   ps flatMap (p => p.assignedBugs map (b => Feature(b.c)))
 
-val allFeatures2: List[Feature] = 
+val allFeatures2: List[Feature] =
   for {
     p <- ps
     b <- p.assignedBugs
   } yield Feature(b.c)
 
-// List(Feature(null), Feature(???), Feature(var x = 3), 
+// List(Feature(null), Feature(???), Feature(var x = 3),
 //      Feature(foo.asInstanceOf[Bar]), Feature(1 = 2))
 ```
-  
+
 ---
 
 layout: true
@@ -244,13 +247,13 @@ Let's look at the FP alternative, `Option`.
 The FP alternative
 
 ```
-val compiledCode: Option[Compiled] = 
+val compiledCode: Option[Compiled] =
   getCoffee() flatMap { coffee =>
     coffee.writeCode() flatMap { code =>
       code.tryCompile()
     }
   }
-      
+
 // either 'None' or 'Some(Compiled(3 coffee => code))'
 ```
 
@@ -264,12 +267,12 @@ The `flatMap`s let us dig into the optional values and manipulate their contents
 def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
 
 case class Coffee(amount: Int) {
-  def writeCode(): Option[Code] = 
+  def writeCode(): Option[Code] =
     choose(Some(Code(s"$amount coffee => code")), None)
 }
 
 case class Code(code: String) {
-  def tryCompile(): Option[Compiled] = 
+  def tryCompile(): Option[Compiled] =
     choose(Some(Compiled(code)), None)
 }
 
@@ -283,13 +286,13 @@ case class Compiled(code: String)
 Using `for` notation
 
 ```
-val compiledCode: Option[Compiled] = 
+val compiledCode: Option[Compiled] =
   for {
     coffee <- getCoffee
     code <- coffee.writeCode()
     compiled <- code.tryCompile()
   } yield compiled
-      
+
 ```
 
 ???
@@ -307,7 +310,7 @@ Now that we're all warmed up, we can move on to something more challenging
 ---
 layout: true
 
-##  Decorator Pattern
+## The Decorator Pattern
 
 ---
 
@@ -331,9 +334,6 @@ trait Programmer {
 }
 ```
 
-
-
-
 ---
 
 An implementation
@@ -342,10 +342,10 @@ An implementation
 class BasicProgrammer(experience: XPPoints,
                       coffeeConsumption: Coffee,
                       languages: Set[Language]) extends Programmer {
-                      
+
   def price: Money = experience * languages.size
 
-  /* more coffee -> more code */
+  // more coffee -> more code
   def makeCode(c: Coffee): LOC =
     experience * math.max(0, c - coffeeConsumption)
 
@@ -370,13 +370,13 @@ We need a default decorator that forwards all method calls to another `Programme
 Concrete decorators
 
 ```
-/* a programmer that writes tests */
+// a programmer that writes tests
 class TestingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
   override def price: Money = super.price * 2
   override def makeCode(c: Coffee): LOC = super.makeCode(c - 5) * 3
 }
 
-/* a programmer that writes documentation */
+// a programmer that writes documentation
 class DocumentingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
   override def price: Money = super.price * 10
 }
@@ -387,7 +387,7 @@ class SaneProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
     else super.acceptProject(l)
 }
 
-/* a programmer that likes learning new languages */
+// a programmer that likes learning new languages
 class PolyglotProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
   override def acceptProject(l): Boolean = !super.acceptProject(l)
 }
@@ -399,15 +399,28 @@ Using decorators
 
 ```
 val base = new BasicProgrammer(
-  experience = 10, 
-  coffeeConsumption = 30, 
+  experience = 10,
+  coffeeConsumption = 30,
   languages = Set("Scala", "Java", "PHP"))
 
-val saneDocTest = 
-  new SaneProgrammer(new DocumentingProgrammer(new TestingProgrammer(base)))
-  
-val documentingPolyglot = new PolyglotProgrammer(new DocumentingProgrammer(base))
+val saneDocTest =
+  new SaneProgrammer(
+    new DocumentingProgrammer(
+      new TestingProgrammer(base)))
 
+val documentingPolyglot =
+  new PolyglotProgrammer(
+    new DocumentingProgrammer(base))
+```
+
+???
+
+We can create different `Programmer`s by combining the different decorators
+---
+
+Using decorators
+
+```
 base.price // 30
 base.makeCode(40) // 100
 base.acceptProject("PHP") // true
@@ -422,16 +435,26 @@ documentingPolyglot.acceptProject("PHP") // false
 ```
 
 ???
-
-We can create different `Programmer`s by combining the different decorators
+And then actually use them
 
 ---
 
 Converting from OO to FP
 <table class="codeTable">
-<tr><td>`prog.price()`</td><td>&nbsp;`-->`&nbsp;</td><td>`price(prog)`</td></tr>
-<tr><td>`prog.makeCode(coffee)`</td><td>&nbsp;`-->`&nbsp;</td><td>`makeCode(prog, coffee)`</td></tr>
-<tr><td>`prog.acceptProject(lang)`</td><td>&nbsp;`-->`&nbsp;</td><td>`acceptProject(prog, lang)`</td></tr>
+<code class="remark-inline-code"></code>
+<tr>
+  <td><code class="remark-inline-code">prog.price()</code></td>
+  <td><code class="remark-inline-code">&nbsp;-->&nbsp;</code></td>
+  <td><code class="remark-inline-code">price(prog)</code></td>
+</tr>
+<tr>
+  <td><code class="remark-inline-code">prog.makeCode(coffee)</code></td>
+  <td><code class="remark-inline-code">&nbsp;-->&nbsp;</code></td>
+  <td><code class="remark-inline-code">makeCode(prog, coffee)</code></td></tr>
+<tr>
+  <td><code class="remark-inline-code">prog.acceptProject(lang)</code></td>
+  <td><code class="remark-inline-code">&nbsp;-->&nbsp;</code></td>
+  <td><code class="remark-inline-code">acceptProject(prog, lang)</code></td></tr>
 </table>
 
 ???
@@ -446,28 +469,47 @@ Converting from OO to FP
 
 With types
 <table class="codeTable">
-<tr><td>`prog.price(): Money`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => Money`</td></tr>
-<tr><td>`prog.makeCode(c: Coffee): LOC`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Coffee => LOC)`</td></tr>
-<tr><td>`prog.acceptProject(l: Language): Boolean`</td><td>&nbsp;`-->`&nbsp;</td><td>`Programmer => (Language => Boolean)`</td></tr>
+<tr>
+  <td><code class="remark-inline-code">prog.price(): Money</code></td>
+  <td><code class="remark-inline-code">&nbsp;-->&nbsp;</code></td>
+  <td><code class="remark-inline-code">Programmer => Money</code></td>
+</tr>
+<tr>
+  <td><code class="remark-inline-code">prog.makeCode(c: Coffee): LOC</code></td>
+  <td><code class="remark-inline-code">&nbsp;-->&nbsp;</code></td>
+  <td><code class="remark-inline-code">Programmer => (Coffee => LOC)</code></td>
+</tr>
+<tr>
+  <td><code class="remark-inline-code">prog.acceptProject(l: Language): Boolean</code></td>
+  <td><code class="remark-inline-code">&nbsp;-->&nbsp;</code></td>
+  <td><code class="remark-inline-code">Programmer => (Language => Boolean)</code></td>
+</tr>
 </table>
 
 ---
 
 Chaining
+
 .codeTable[
-`TestingProgrammer(DocumentingProgrammer(prog)).price()`  
-`-->`  
+`TestingProgrammer(DocumentingProgrammer(prog)).price()`
+
+`-->`
+
 `testPrice(docPrice(price(prog)))`
 ]
 
 --
 
 With types
+
 .codeTable[
-`TestingProgrammer(DocumentingProgrammer(prog)).price()`  
-`-->`  
-`(Programmer => Money) andThen (Money => Money) andThen (Money => Money)`  
-]  
+`TestingProgrammer(DocumentingProgrammer(prog)).price()`
+
+`-->`
+
+`(Programmer => Money) andThen (Money => Money) andThen (Money => Money)`
+]
+
 ```
 (f andThen g)(x) == g(f(x))
 ```
@@ -506,8 +548,8 @@ Using it
 
 ```
 val p = Programmer(
-  experience = 10, 
-  coffeeConsumption = 30, 
+  experience = 10,
+  coffeeConsumption = 30,
   languages = Set("Scala", "Java", "PHP"))
 
 price(p) // 30
@@ -519,12 +561,12 @@ acceptProject(p)("PHP") // true
 
 The decorators
 ```
-val testPrice: Money => Money = 
+val testPrice: Money => Money =
   m => m * 2
 
-val docPrice: Money => Money = 
+val docPrice: Money => Money =
   m => m * 10
-  
+
 val testMakeCode: (Coffee => LOC) => (Coffee => LOC) =
   mc =>
     c => mc(c - 5) * 3
@@ -562,8 +604,8 @@ polyAcc(p)("PHP") // false
 
 - We can now imitate the decorator combinations from before
 
-- Notice that we only create the functions that were actually overriden by the OO decorators.
-        
+- Notice that we only create the functions that were actually overridden by the OO decorators.
+
 ---
 
  Recap:
@@ -583,9 +625,7 @@ polyAcc(p)("PHP") // false
 
 - Generified version:  
 `(Programmer => A) andThen (A => B)` `-->` `Programmer => B`
-        
 
-  
 ???
 
 - To achieve this in the OO version we would have to change the `Programmer` interface for every new function that we want to define.
@@ -595,23 +635,23 @@ Using a general decorator
 ```
 val shouldHire: Money => Boolean = m => m < 50
 
-val executiveDecision1: Programmer => Boolean = 
+val executiveDecision1: Programmer => Boolean =
   price andThen shouldHire
-  
-val executiveDecision2: Programmer => Boolean = 
+
+val executiveDecision2: Programmer => Boolean =
   price andThen testPrice andThen shouldHire
 
 executiveDecision1(p) // true
 executiveDecision2(p) // false
-```  
+```
 
 ???
 
-- Using function composition we can take any function chain of the form:  
-`Programmer => A => (A => B) => (B => C) => ... => (C => D)`  
+- Using function composition we can take any function chain of the form:
+`Programmer => A => (A => B) => (B => C) => ... => (C => D)`
 and turn it into a single function `Programmer => D`
 - This is a step beyond what we had in the classic decorator, but we are still missing something.
-- Although we didn't use it explicitly, in the original decorator, we had access to the value we wrapped. In  
+- Although we didn't use it explicitly, in the original decorator, we had access to the value we wrapped. In
 ```
 class DocumentingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
     override def price: Money = super.price * 10
@@ -631,7 +671,7 @@ Programmer => A => (A => Programmer => B) --> Programmer => B
 
 - It means that we need to have a `Programmer` available inside our decorators:
 `Programmer => A => (A => Programmer => B)`
-- But the `Programmer` inside the chain should be the same one we started with:  
+- But the `Programmer` inside the chain should be the same one we started with:
 `Programmer => A => (A => Programmer => B)` `-->` `Programmer => B`
 - Let's call the function that does this `flatAndThen`
 
@@ -651,8 +691,8 @@ implicit class Decorator[A](f: Programmer => A) {
 ```
 
 ???
-- With this function we can take any chain of the form:  
-`Programmer => A => (A => Programmer => B) => (B => Programmer => C) => ... => (C => Programmer => D)`  
+- With this function we can take any chain of the form:
+`Programmer => A => (A => Programmer => B) => (B => Programmer => C) => ... => (C => Programmer => D)`
 and turn into a single function `Programmer => D`
 - To write down the function we'll just try to "follow the types" (down the rabbit hole) and see where it gets us.
 - We'll use an implicit class to "pimp" this function directly on our functions.
@@ -664,8 +704,8 @@ Using the new decorator
 ```
 val bonus: Money => (Programmer => Money) =
   m => p => m + p.experience
-  
-val withBonus: Programmer => Money = 
+
+val withBonus: Programmer => Money =
   price andThen testPrice flatAndThen bonus
 
 withBonus(p) // 70
@@ -678,10 +718,10 @@ withBonus(p) // 70
 val deadProgrammer: (Coffee => LOC) => Programmer => (Coffee => LOC) =
   mc => p =>
     c => if (c > 4 * p.coffeeConsumption) mc(c) else 0
-    
-val deadMake: Programmer => (Coffee => LOC) = 
+
+val deadMake: Programmer => (Coffee => LOC) =
   makeCode flatAndThen deadProgrammer andThen testMakeCode
-  
+
 deadMake(p)(50) // 0
 deadMake(p)(130) // 2850
 ```
@@ -697,7 +737,7 @@ val costEffective: Programmer => Boolean =
       (p: Programmer) => mc(p.coffeeConsumption) > pr
     }
   }
-    
+
 costEffective(p) // false
 ```
 
@@ -735,12 +775,12 @@ layout: true
 ???
 
 
-- The interpreter pattern is used when your language does not provide you with the right level of abstraction for the task at hand.  
-- So you create your own Domain-Specific Language and embed it in the host language.  
-- Nothing particularly OO about this. Typically, you represent the language as a `Composite`, and you interpret it using a `Visitor`.  
-- Both patterns are pretty much lifted from FP, so we'll skip the OO implementation this time.  
-- Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.  
-- We'll try to come up with a way that works particularly well with separating the language from its interpretation.  
+- The interpreter pattern is used when your language does not provide you with the right level of abstraction for the task at hand.
+- So you create your own Domain-Specific Language and embed it in the host language.
+- Nothing particularly OO about this. Typically, you represent the language as a `Composite`, and you interpret it using a `Visitor`.
+- Both patterns are pretty much lifted from FP, so we'll skip the OO implementation this time.
+- Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.
+- We'll try to come up with a way that works particularly well with separating the language from its interpretation.
 
 
 --
@@ -754,10 +794,10 @@ The domain:
 
 ???
 
-- We would like to interconnect the different actions, so that one leads to another.  
-- We also want to have interaction with the outer world.   
-- For example, compilation produces some response from outside, and based on this response we choose the next action.  
-- But we do not want our language to know anything about how to obtain the responses, the interpreter will be responsible for that.  
+- We would like to interconnect the different actions, so that one leads to another.
+- We also want to have interaction with the outer world.
+- For example, compilation produces some response from outside, and based on this response we choose the next action.
+- But we do not want our language to know anything about how to obtain the responses, the interpreter will be responsible for that.
 
 ---
 
@@ -782,38 +822,37 @@ case object ScaryTypeException extends CompileResponse
 ```
 
 ---
+class: smallCode
 
 `ScaryTypeException`:
 
-<div class="smallCode">
 ```
 5862.scala:36: error: type mismatch;
 found : scala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
-scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3]
 forSome { type _$1; type _$2; type _$3 } <: Object] with
 scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
-scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
-forSome { type _$1; type _$2; type _$3 }, 
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3]
+forSome { type _$1; type _$2; type _$3 },
 scala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
-scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3]
 forSome { type _$1; type _$2; type _$3 } <: Object] with
 scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
-scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3]
 forSome { type _$1; type _$2; type _$3 },
 cala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
-scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3]
 forSome { type _$1; type _$2; type _$3 } <: Object] with
 scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
-scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3]
 forSome { type _$1; type _$2; type _$3 },
 scala.collection.mutable.Iterable[_ >: (MapReduceJob.this.DataSource,
-scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3] 
+scala.collection.mutable.Set[test.TaggedMapper[_, _, _]]) with test.TaggedMapper[_$1,_$2,_$3]
 forSome { type _$1; type _$2; type _$3 } <: Object] with
 scala.collection.mutable.Builder[(MapReduceJob.this.DataSource,
 scala.collection.mutable.Set[test.TaggedMapper[_, _, _]])
 ...
 ```
-</div>
 
 and so on for another 200 lines
 
@@ -822,7 +861,7 @@ and so on for another 200 lines
 A sample program
 
 ```
-val prog: ProgAction = 
+val prog: ProgAction =
   DrinkCoffee(3,
     coffee => WriteCode(coffee,
       code => Compile(code,
@@ -837,15 +876,15 @@ val prog: ProgAction =
 Combining smaller programs
 
 ```
-val drinkWrite: ProgAction = 
+val drinkWrite: ProgAction =
   DrinkCoffee(3,
     coffee => WriteCode(coffee,
       code => ???
     ))
 
-val compile: Code => ProgAction = 
+val compile: Code => ProgAction =
   code => Compile(code, compileResponse => ???)
-  
+
 drinkWrite next compile
 ```
 
@@ -1012,13 +1051,13 @@ sealed trait Program[+A] {
 
 Composing `Program`s
 ```
-val write: Program[Code] = 
+val write: Program[Code] =
   Glue(WriteCode(3, code => Return(code)))
 
 val compile: Code => Program[CompileResponse] =
   code => Glue(Compile(code, compileResp => Return(compileResp)))
-  
-val writeCompile: Program[CompileResponse] = 
+
+val writeCompile: Program[CompileResponse] =
   write next compile
 ```
 
@@ -1026,7 +1065,7 @@ val writeCompile: Program[CompileResponse] =
 ???
 
 - Finally, we can compose our `ProgAction`s.
-- It works! 
+- It works!
 - Or at the very least it compiles, though that's most of what you need when you program by "following the types".
 - But those references to `Glue`s are quite annoying, let's try to hide them away.
 
@@ -1037,25 +1076,25 @@ The `Program` primitives
 ```
 def ret[A](a: A) = Return(a)
 
-val drinkCoffee: Cups => Program[Coffee] = 
+val drinkCoffee: Cups => Program[Coffee] =
   cups => Glue(DrinkCoffee(cups, coffee => ret(coffee)))
-  
-val writeCode: Coffee => Program[Code] = 
+
+val writeCode: Coffee => Program[Code] =
   coffee => Glue(WriteCode(coffee, code => ret(code)))
-  
-val compile: Code => Program[CompileResponse] = 
+
+val compile: Code => Program[CompileResponse] =
   code => Glue(Compile(code, cr => ret(cr)))
-  
-val bangHeadOnKeyboard: Program[Nothing] = 
+
+val bangHeadOnKeyboard: Program[Nothing] =
   Glue(BangHeadOnKeyboard)
 
-val commitCode: Code => Program[Nothing] = 
+val commitCode: Code => Program[Nothing] =
   code => Glue(CommitCode(code))
 ```
 
 ???
 - We can factor out the `Glue`s into a bunch of primitive functions, one for every action we have.
-- There's a common pattern here, which can be factored into a separate function, I'll leave it as an exercise (you can see the solution in the repository). 
+- There's a common pattern here, which can be factored into a separate function, I'll leave it as an exercise (you can see the solution in the repository).
 
 ---
 
@@ -1076,9 +1115,9 @@ val writeCompile: Program[CompileResponse] = writeCode(3) next compile
 
 - The nervous programmer abuses coffee, without actually turning it into code...
 
-- Now that we have a language, it would be a bit pointless if we don't do something with it. 
+- Now that we have a language, it would be a bit pointless if we don't do something with it.
 
-- Let's hack up an interpreter for it. 
+- Let's hack up an interpreter for it.
 
 - Our interpreter is just a pretty printer.
 
@@ -1149,7 +1188,7 @@ val codeToResponse = Map(
 
 ---
 
-Output 
+Output
 ```
 print(idealProgrammer next commitCode)
 ```
@@ -1182,8 +1221,8 @@ Bang head on keyboard
 ???
 
 - In the same vein, we can write other kinds of interpreters.
-- You can see couple of other examples in the repository. 
-- One counts the amount of coffee the programmer consumes. 
+- You can see couple of other examples in the repository.
+- One counts the amount of coffee the programmer consumes.
 - The other fetches the code that the programmer produced.
 - We have managed to define a small language using composable parts.
 - This sort of composability would be hard to achieve with OO techniques.
@@ -1289,7 +1328,7 @@ Monads on the web:
 
 ???
 
-- So I won't be explaining monads in this lecture. 
+- So I won't be explaining monads in this lecture.
 
 - But I will give you some motivation on why you should care about them.
 
@@ -1297,7 +1336,7 @@ Monads on the web:
 
 - A concrete example in Scala is the `for` syntax.
 
-- The `for` syntax is provided for free for anything that can be regarded as a monad. 
+- The `for` syntax is provided for free for anything that can be regarded as a monad.
 
 - Specifically, anything that supports `flatMap` (and `map`).
 
@@ -1348,12 +1387,12 @@ class: center middle, transition
 
   </textarea>
 	<script
-		src="remark-0.5.9.min.js"
+		src="remark-0.13.0.min.js"
 		type="text/javascript">
-		
+
 	</script>
 	<script type="text/javascript">
-    var slideshow = remark.create({ highlightLanguage: 'scala', highlightStyle: 'github'});
+    var slideshow = remark.create({ highlightLanguage: 'scala', highlightStyle: 'magula'});
     //document.addEventListener('click', function (e) { slideshow.gotoNextSlide() }, false);
 	</script>
 </body>
