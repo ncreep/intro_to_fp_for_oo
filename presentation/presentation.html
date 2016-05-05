@@ -15,21 +15,17 @@ class: center, middle, transition, intro
 .leftFloat[]
 .rightFloat[Daniel Beskin]
 ---
+class: center, middle
 
-## Introduction
+The full code can be found at:
 
-- We'll be talking about Functional Programming and Design
-
-- I'll be assuming that you're familiar with Object Oriented Design
-
-- The full code can be found at:
 https://github.com/ncreep/intro_to_fp_for_oo
+
 ???
 
 - This is going to be an introduction to some not so basic Functional programming concepts, from the point of view of an OO programmer.
-
+- I'll be assuming that you're familiar with Object Oriented Design
 - I'll be assuming that you are comfortable with the more basic concepts like recursion and higher order functions.
-
 - If not, we have a quick warm up ahead of us, so I hope you do get up to speed.
 
 ---
@@ -110,6 +106,13 @@ val features = featureBuffer.toList
 // => List(Feature(null), Feature(???), Feature(var x = 3))
 ```
 
+???
+- This is a very basic example of using an Iterator in an OO setting
+- The code describes the magical process by which bugs become features
+- The code itself is quite straightforward: 
+- Given a list of bugs we iterate over them and turn them into features
+- But the code is a bit verbose, we have all this ceremony with the `while` loop
+- While the essence of the code is this one line, which is now a bit hard to find
 
 ---
 
@@ -123,6 +126,13 @@ val features2: List[Feature] = for (b <- bugs) yield Feature(b.c)
 // => List(Feature(null), Feature(???), Feature(var x = 3))
 ```
 
+???
+- The Functional alternative is to use an "internal" iterator
+- That is, we delegate the management of the iteration itself to someone else
+- We just pass the essential data in form of a function
+- In this case, the boilerplate is minimal, and it's quite easy to see the essence of the code
+- Also, in Scala, we have the `for`-comprehension syntax, which is equivalent to the above
+- And in some cases may be more readable
 ---
 
 Iteration combinators
@@ -137,6 +147,18 @@ val ps = List(p1, p2)
 val allFeatures: List[Feature] =
   ps flatMap (p => p.assignedBugs map (b => Feature(b.c)))
 
+{{content}}
+```
+
+???
+- Another benefit of using the Functional approach, is that we can build more complicated things on top of it
+- In this example, we do nested iteration using the `flatMap` function
+- Here, each programmer has some assigned bugs, and we have a list of programmers
+- We want to turn all available bugs into features
+- So we `flatMap` over the programmers list, and for every bug they have, we reuse the previous `map` invocation
+
+--
+
 val allFeatures2: List[Feature] =
   for {
     p <- ps
@@ -145,7 +167,12 @@ val allFeatures2: List[Feature] =
 
 // List(Feature(null), Feature(???), Feature(var x = 3),
 //      Feature(foo.asInstanceOf[Bar]), Feature(1 = 2))
-```
+
+???
+
+- This is somewhat more readable with a `for`
+- Again, we are not dealing with the iteration, we just write the essence of the code that we need
+- And this gives us reuse, since we can use the functions being mapped in other contexts as well (unlike the external iterator approach)
 
 ---
 
@@ -169,6 +196,14 @@ val compiledCode = {
 ```
 
 ???
+
+- Next stop, dealing with `null`s
+- In a language where `null`s are being used constantly, we have to guard our code against them
+- Which makes our code noisy with various `null` checks all over the place
+- Here we have the process of code writing, where we assume that in order to write code, one needs coffee
+- The `getCoffee` function may return `null` when there isn't any coffee
+- And the `writeCode` method may return `null` if there isn't enough coffee to produce code
+- All these `null` checks are distracting from the essence of the code
 
 ```
 val compiledCode = {
@@ -209,6 +244,14 @@ val compiledCode = getCoffee().writeCode().tryCompile()
 // either 'NotCompiled' or 'RealCompiled(3 coffee => code)'
 ```
 
+???
+- There is a design pattern called the Null Object
+- Where for a type that can be somehow missing we define a special subtype that represents an empty or default value
+- With this approach we can cleanup our pervious code into this
+- Here, the flow of the code is clean and obvious
+- The result here is either some compiled code (when all values are present), or a default missing value (when something's missing)
+- But there's a price, boilerplate
+
 --
 
 The boilerplate
@@ -234,15 +277,12 @@ def getCoffee(): Coffee = choose(RealCoffee(3), NoCoffee)
 
 ???
 
-Null objects are safer, but require way too much boilerplate for every case. In return:
-
-- we don't get any help from the compiler
-- there is no generic way to compose different null objects
-
-Let's look at the FP alternative, `Option`.
-
+- For each type in the code, we need a trait and a real and default implementation
+- Null objects are safer, but require way too much boilerplate for every case. In return:
+  * we don't get any help from the compiler (the compiler can't tell apart the different instances of a trait)
+  * there is no generic way to compose different null objects
+- Let's look at the FP alternative, `Option`
 ---
-
 
 The FP alternative
 
@@ -259,7 +299,9 @@ val compiledCode: Option[Compiled] =
 
 ???
 
-The `flatMap`s let us dig into the optional values and manipulate their contents.
+- Instead of using `null`s or having special missing values, we use the `Option` type
+- The `flatMap`s let us dig into the optional values and manipulate their contents
+- Now there isn't any special boilerplate, since `Option` is generic and can be used in any context
 
 --
 
@@ -279,8 +321,10 @@ case class Code(code: String) {
 case class Compiled(code: String)
 ```
 
-
-
+???
+- Every time we a value is missing we return `None`
+- All the special case handling is wrapped inside the `map` and `flatMap` methods
+- We can also slightly simplify the code by using `for` notation
 ---
 
 Using `for` notation
@@ -297,7 +341,11 @@ val compiledCode: Option[Compiled] =
 
 ???
 
-`Option` is like a list of 0 or 1 items, we can use the `for` notation from before.
+- `Option` is like a list of 0 or 1 items, we can use the `for` notation from before.
+- The benefit here is that now the compiler know that we might have a missing case
+- So we can't accidentally call a method that might not be present
+- And there's a clear distinction between a possibly missing value and an always present one
+- And thanks to the use of higher-order functions, the boilerplate is minimal
 
 ---
 layout: false
@@ -334,6 +382,13 @@ trait Programmer {
 }
 ```
 
+???
+- So we'll continue modeling programmers
+- In this case a programmer has three methods:
+  * A price
+  * The ability to turn coffee into lines of code
+  * And accepting or rejecting a project based on its language
+
 ---
 
 An implementation
@@ -353,6 +408,21 @@ class BasicProgrammer(experience: XPPoints,
 }
 ```
 
+???
+
+- We start with the basic implementation of the programmer trait
+- We'll base the implementation on the following data about the programmer:
+  * The amount of experience
+  * The coffee consumption
+  * The languages that the programmer knows
+- The implementation is straightforward
+  * The more experience and languages that the programmer has, the higher the price
+  * More experienced programmers produce more code with the same amount of code
+  * Whether to accept a project or not depends on whether we know the language used in the project
+- To actually implement the decorator, we'll need a simple forwarding implementation
+
+--
+
 ```
 abstract class ProgrammerDecorator(p: Programmer) extends Programmer {
   def price: Money = p.price
@@ -360,11 +430,9 @@ abstract class ProgrammerDecorator(p: Programmer) extends Programmer {
   def acceptProject(l: Language): Boolean = p.acceptProject(l)
 }
 ```
-
 ???
-
-We need a default decorator that forwards all method calls to another `Programmer`
-
+- This programmer just forwards all method calls to another `Programmer`
+- Thus allowing us to combine different programmer implementations together
 ---
 
 Concrete decorators
@@ -392,6 +460,14 @@ class PolyglotProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
   override def acceptProject(l): Boolean = !super.acceptProject(l)
 }
 ```
+???
+- Now we can create decorators
+- Each one extends the `ProgrammerDecorator` class, so as to forward all un-overridden methods
+- We have:
+  * A programmer that writes many tests: more expensive and writes way more code
+  * A documenting programmer: more expensive for the same amount of code
+  * A sane programmer: that just refuses to accept PHP projects
+  * A polyglot programmer: just likes to learn more languages and accepts anything with a new language
 
 ---
 
@@ -415,7 +491,7 @@ val documentingPolyglot =
 
 ???
 
-We can create different `Programmer`s by combining the different decorators
+- We can create different `Programmer`s by combining the different decorators
 ---
 
 Using decorators
@@ -435,8 +511,7 @@ documentingPolyglot.acceptProject("PHP") // false
 ```
 
 ???
-And then actually use them
-
+- And then actually use them with the expected results
 ---
 
 Converting from OO to FP
@@ -460,11 +535,14 @@ Converting from OO to FP
 ???
 
 - Now, let's look at this problem from a Functional perspective.
-
 - We need to rephrase the problem in terms of functions that are separate from the data they operate on.
-
 - Because of the implicit `this`, we can view method calls as functions
-
+- Like the following:
+  * The `price` method becomes a function that takes a programmer instance and produces the price
+  * The `makeCode` method is a bit more complicated, since it takes an argument, but the principle is the same:  
+    take a programmer and the other argument and produce a result
+  * Same for the `acceptProject` method
+  
 --
 
 With types
@@ -486,6 +564,14 @@ With types
 </tr>
 </table>
 
+???
+- Since we are working in a type language, we can spell out the types of the functions that we need
+- It's sometimes easier to figure out solutions to problems when we zoom out to the types
+- In this case all functions take an input programmer and produce some result
+- We are writing the functions in what is called "curried" style
+- Instead of accepting two arguments, we accept one and then produce a function that accepts the following argument
+- This makes the signatures more uniform and will be handy later on
+- So the `makeCode` function takes a programmer and produces a function that given coffee, produces code
 ---
 
 Chaining
@@ -497,6 +583,13 @@ Chaining
 
 `testPrice(docPrice(price(prog)))`
 ]
+
+???
+- We can try to translate a decorated instance into the Functional style
+- We start out with the regular function, this produces some money value
+- Then we take that value and transform it with the documentation price
+- And then the resulting price is transformed for the tests price
+- This can be a bit clearer with just the types
 
 --
 
@@ -516,10 +609,12 @@ With types
 
 ???
 
-- Viewed this way, the call to `super` is like function chaining
-
+- In here we use the function composition operator `andThen`, which takes two functions and chains them
+- On the left is the original function
+- Then comes the decorating function, it starts with the value from the previous function and produces a new one
+- And the same for the second decorator
+- Viewed this way, the call to `super` in the decorator is like function chaining
 - So decoration is (almost) function composition
-
 - Let's code it up
 
 ---
@@ -542,6 +637,12 @@ val acceptProject: Programmer => (Language => Boolean) =
   p => l => p.languages(l)
 ```
 
+???
+- Here, the programmer is just a simple data type with no functions
+- All of the functionality is in stand-alone functions
+- This is just a straight-forward rewrite of the methods that we had before
+- Notice the currying, instead of receiving two arguments, we receive one and produce a function that takes the second one
+
 ---
 
 Using it
@@ -556,6 +657,11 @@ price(p) // 30
 makeCode(p)(40) // 100
 acceptProject(p)("PHP") // true
 ```
+
+???
+- Using the functions is simple, just apply the to the programmer instance
+- The results are the same as before
+- We can now code the decorators
 
 ---
 
@@ -580,6 +686,16 @@ val polyAccept: (Language => Boolean) => (Language => Boolean) =
     l => !ap(l)
 ```
 
+???
+- As we said, each decorator take the output of the original programmer function and produces a new output
+- The price decorators are the simplest: just take the money we got and do something with it
+- The `makeCode` decorator is slightly more complicated
+- Here we are not just getting a value from the programmer function, the result is a function by itself
+- So the decorator needs to produce a new function
+- The `testMakeCode` function take a code making function, and uses it to produce a new code making function
+- Just like `super` call let's us access the functionality of the class that we are decorating
+- Having imitated the decorators from before, we can use them
+
 ---
 
 Using it
@@ -603,9 +719,10 @@ polyAcc(p)("PHP") // false
 ???
 
 - We can now imitate the decorator combinations from before
-
-- Notice that we only create the functions that were actually overridden by the OO decorators.
-
+- A decorator combination is just a chain of functions
+- Notice that we only create the functions that were actually overridden by the OO decorators
+- So there's no need for a base decorator or anything, we just mix and match 
+- And the results are just as before
 ---
 
  Recap:
@@ -618,8 +735,9 @@ polyAcc(p)("PHP") // false
 `(Programmer => A) andThen (A => A)` `-->` `Programmer => A`
 
 ???
-
-- But who said that we have to use the same `A` all over the place? Function composition works just as well with different types.
+- Where is some type, like `Money` or a function type
+- But who said that we have to use the same `A` all over the place? 
+- Function composition works just as well with different types.
 
 --
 
@@ -628,7 +746,9 @@ polyAcc(p)("PHP") // false
 
 ???
 
-- To achieve this in the OO version we would have to change the `Programmer` interface for every new function that we want to define.
+- Here we have more flexibility in what we use as decorators
+- To achieve this in the OO version we would have to change the `Programmer` interface for every new function that we want to define
+- Which is not a good thing
 ---
 
 Using a general decorator
@@ -647,7 +767,11 @@ executiveDecision2(p) // false
 
 ???
 
-- Using function composition we can take any function chain of the form:
+- We are creating functions that decide whether we should hire someone or not
+- The `shouldHire` is a generic decorator of the new type, it takes `Money` but produces a `Boolean`
+- Here we use the new flexibility that we found and use it to change type
+- And we can still mix and match the old decorators
+- Generally, Using function composition we can take any function chain of the form:
 `Programmer => A => (A => B) => (B => C) => ... => (C => D)`
 and turn it into a single function `Programmer => D`
 - This is a step beyond what we had in the classic decorator, but we are still missing something.
@@ -664,16 +788,19 @@ we could actually call whatever we want on `p`. But there's no mention of a `Pro
 
 A new decorator type
 ```
-Programmer => A => (A => Programmer => B) --> Programmer => B
+(Programmer => A) => (A => Programmer => B) --> Programmer => B
 ```
 
 ???
 
-- It means that we need to have a `Programmer` available inside our decorators:
-`Programmer => A => (A => Programmer => B)`
-- But the `Programmer` inside the chain should be the same one we started with:
-`Programmer => A => (A => Programmer => B)` `-->` `Programmer => B`
-- Let's call the function that does this `flatAndThen`
+- What we see here is the signature of a new decoration operation
+- Given a programmer function, on the left
+- And given a decorator of the new kind, the one that also has access to a `Programmer` instance
+- The part in the middle is the new decorator type
+- We need to able to combine the two into a new programmer function, the part on the left
+- And since we don't have any programmers at hand, we'll just have to pass the one that we started with
+- Let's call the new decoration function that does this `flatAndThen`
+- And we can implement it by just following the types
 
 --
 
@@ -691,12 +818,21 @@ implicit class Decorator[A](f: Programmer => A) {
 ```
 
 ???
+- We'll use an implicit class to "pimp" this function directly on our functions.
+- So `f` is the original `Programmer` function
+- And `g` is the decorator function
+- And this is the return type that we need
+- To write down the function we'll just try to "follow the types" (down the rabbit hole) and see where it gets us
+- So we need to return a function that takes a `Programmer` and returns something, the programmer is `p`
+- Now we have the `f` function, it expects a `Programmer`, and the only one in scope is `p`, so let's use that
+- The result is some `A`, and that exactly what `g` needs, so let's apply it to `a`
+- The result is a function from a `Programmer` to `B`
+- So let's give it `p`, and the result is the `b` that we need
+- Notice how the same `p` is used twice, thus making sure that the decorator work on the same programmer.
 - With this function we can take any chain of the form:
 `Programmer => A => (A => Programmer => B) => (B => Programmer => C) => ... => (C => Programmer => D)`
 and turn into a single function `Programmer => D`
-- To write down the function we'll just try to "follow the types" (down the rabbit hole) and see where it gets us.
-- We'll use an implicit class to "pimp" this function directly on our functions.
-- Notice how the same `p` is used twice.
+- Let's see how we use it
 
 ---
 
@@ -710,6 +846,11 @@ val withBonus: Programmer => Money =
 
 withBonus(p) // 70
 ```
+
+???
+- Here we calculate the bonus a programmer gets, for that we need access to the actual programmer instance
+- So this is a decorator of the new kind
+- And we can mix and match it with the plain decorators
 
 --
 
@@ -725,6 +866,13 @@ val deadMake: Programmer => (Coffee => LOC) =
 deadMake(p)(50) // 0
 deadMake(p)(130) // 2850
 ```
+
+???
+
+- And here's another example using the a more complicated decorator
+- In this case, we model a dead programmer, which normally doesn't produce any code
+- But with enough coffee, code can be produced anyway
+- And what is "enough" is determined by the actual `Programmer` instance that we're working on
 
 ---
 
@@ -744,15 +892,17 @@ costEffective(p) // false
 ???
 
 - We can also combine a number of `Programmer` functions.
+- We are trying to figure out whether a programmer is cost effective, that is whether he produces more code than his price
 - `makeCode` is like a container for a `Coffee => LOC` function value, and `price` is a container for a `Money` value.
 - `andThen` and `flatAndThen` help us reach inside the container and manipulate its contents (sounds familiar?).
 - The values depend on the `Programmer` instance that we are going to provide in the future.
 - Kind of like Dependency Injection.
 - But it's becoming a bit clumsy to write, we'll address this issue later on.
-- OO decoration is similar to FP (flattened) function composition.
-- OO decoration works well when we have a fixed set of functions and many types of data.
-- FP decoration works well when we have a fixed set of data types and many functions to calculate over them.
-- Because of how function composition works, when used in the right context, FP decoration is much more flexible and lightweight than the OO counterpart.
+- To conclude:
+  * OO decoration is similar to FP (flattened) function composition.
+  * OO decoration works well when we have a fixed set of functions and many types of data.
+  * FP decoration works well when we have a fixed set of data types and many functions to calculate over them.
+  * Because of how function composition works, when used in the right context, FP decoration is much more flexible and lightweight than the OO counterpart.
 
 ---
 layout: false
@@ -782,7 +932,6 @@ layout: true
 - Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.
 - We'll try to come up with a way that works particularly well with separating the language from its interpretation.
 
-
 --
 The domain:
 
@@ -798,7 +947,7 @@ The domain:
 - We also want to have interaction with the outer world.
 - For example, compilation produces some response from outside, and based on this response we choose the next action.
 - But we do not want our language to know anything about how to obtain the responses, the interpreter will be responsible for that.
-
+- And this is the domain that we'll be modeling
 ---
 
 The domain:
@@ -820,6 +969,17 @@ case class WaitTime(t: Time) extends CompileResponse
 case object Exception extends CompileResponse
 case object ScaryTypeException extends CompileResponse
 ```
+
+???
+
+- The domain is modeled by `ProgAction`
+- Each action in the domain becomes a case class of type `ProgAction`
+- For example, `DrinkCoffee` specifies how many cups we want to drink 
+- And expects a continuation function that accepts the coffee that we just drank
+- Based on the input coffee, we choose the next action
+- Similarly for `WriteCode` and `Compile`, we specify some parameter and then await a response in the continuation where we choose the next action
+- `CommitCode` and `BangHeadOnKeyboard` are final actions, since they don't have a continuation
+- The `Compile` action takes a `CompileResponse` which can be one of the following cases
 
 ---
 class: smallCode
@@ -871,6 +1031,13 @@ val prog: ProgAction =
         })))
 ```
 
+???
+- The sample program does the following:
+  * We ask for three cups of coffee
+  * We use the input coffee to write code
+  * The resulting code is compiled
+  * If the response is just waiting, we wait and then commit the code
+  * Otherwise, we bang our head on the keyboard
 ---
 
 Combining smaller programs
@@ -891,6 +1058,8 @@ drinkWrite next compile
 ???
 
 - But we have a problem, what if we want to write snippets of actions and combine them together.
+- The first snippet just drinks and writes, and the second just compiles
+- And we want to combine them like so
 - We don't have a `next` function.
 - Nor do the types work out even if we did.
 - And what do we put instead of the `???`?
@@ -912,7 +1081,8 @@ case object BangHeadOnKeyboard extends ProgAction[Nothing]
 ```
 
 ???
-- Now that the type is general, maybe we can use it to stub out arbitrary chains.
+- This is the same as before, except that the continuations return a generic value
+- Now that the type is general, maybe we can use it to stub out arbitrary chains
 
 - For this purpose, we are going to introduce some glue.
 
@@ -927,8 +1097,8 @@ case class Glue[A](pa: ProgAction[Program[A]]) extends Program[A]
 ???
 
 - A `Program` is just a wrapper around some value of type `A`.
-
 - `Glue` sticks pieces of `ProgAction`s together, and `Return` lets us stub out a chain, returning the contained value.
+- Let's see that in an example
 
 ---
 
@@ -948,7 +1118,8 @@ val drinkWrite: Program[Code] =
 ```
 
 ???
-- Each `Program` snippet contains the response for the action wrapped in a `Return`.
+- Each `Program` snippet contains the response for the action wrapped in a `Return`
+- And the generic value of the `Program` becomes the thing that we `Return`
 
 - Stubbing done, what about the `next` function?
 
@@ -1044,8 +1215,9 @@ sealed trait Program[+A] {
 
 ???
 - Now that we can reach into our `ProgAction`s, we can complete the definition of `next`.
-- In the `Glue` case we recursively apply `f` until we either hit a `Return` or a final `ProgAction`.
-
+- We now `map` into `Glue` and pass the `f` function to the `Program` inside
+- This way we recursively apply `f` until we either hit a `Return` or a final `ProgAction`.
+- This is a bit tricky to wrap your head around, but by following the types this kind-of writes itself
 
 ---
 
@@ -1094,8 +1266,8 @@ val commitCode: Code => Program[Nothing] =
 
 ???
 - We can factor out the `Glue`s into a bunch of primitive functions, one for every action we have.
+- For each primitive, we wrap it with a `Glue` and `Return` the value it gets in the continuation
 - There's a common pattern here, which can be factored into a separate function, I'll leave it as an exercise (you can see the solution in the repository).
-
 ---
 
 Examples
@@ -1107,19 +1279,9 @@ val writeCompile: Program[CompileResponse] = writeCode(3) next compile
 
 ???
 
-- We can create any `Program` we want using our primitives.
+-  Since we wrapped all of our primitives, we can create any `Program` we want using our primitives.
 
 - And we can now write more complicated descriptions of programmers.
-
-- The ideal programmer just keeps writing code until it compiles and does not abuse coffee.
-
-- The nervous programmer abuses coffee, without actually turning it into code...
-
-- Now that we have a language, it would be a bit pointless if we don't do something with it.
-
-- Let's hack up an interpreter for it.
-
-- Our interpreter is just a pretty printer.
 
 --
 
@@ -1136,6 +1298,9 @@ val idealProgrammer: Program[Code] =
   }
 ```
 
+???
+- The ideal programmer just keeps writing code until it compiles and does not abuse coffee.
+
 --
 
 ```
@@ -1151,6 +1316,14 @@ val nervousProgrammer: Program[Code] =
   }
 ```
 
+???
+- The nervous programmer abuses coffee, without actually turning it into code...
+
+- Now that we have a language, it would be a bit pointless if we don't do something with it.
+
+- Let's hack up an interpreter for it.
+
+- Our interpreter is just a pretty printer.
 
 ---
 
@@ -1184,8 +1357,12 @@ val codeToResponse = Map(
   "higher kinded madness" -> ScaryTypeException)
 ```
 
-
-
+???
+- Writing an interpreter is straightforward, just follow the possible cases one by one
+- In here, we follow the steps of our program and supply the appropriate input values
+- For each bit of code, we have some compilation response
+- As you can see, Java code compiles quite quickly, unlike Scala...
+- And we can run our programs
 ---
 
 Output
@@ -1265,11 +1442,18 @@ def flatAndThen[A, B]: ForProg[A] => (A => ForProg[B]) => ForProg[B]
 def next[A, B]:        Program[A] => (A => Program[B]) => Program[B]
 ```
 
+???
+- By looking only at the signatures we can easily spot a repetitive pattern
+
 --
 
 ```
 def flatMap[A, B]: M[A] => (A => M[B]) => M[B]
 ```
+
+???
+
+- This is what's left after we abstract away the wrapper type
 
 --
 
