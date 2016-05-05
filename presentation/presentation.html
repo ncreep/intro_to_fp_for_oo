@@ -417,7 +417,7 @@ class BasicProgrammer(experience: XPPoints,
   * The languages that the programmer knows
 - The implementation is straightforward
   * The more experience and languages that the programmer has, the higher the price
-  * More experienced programmers produce more code with the same amount of code
+  * More experienced programmers produce more code with the same amount of coffee
   * Whether to accept a project or not depends on whether we know the language used in the project
 - To actually implement the decorator, we'll need a simple forwarding implementation
 
@@ -565,7 +565,7 @@ With types
 </table>
 
 ???
-- Since we are working in a type language, we can spell out the types of the functions that we need
+- Since we are working in a typed language, we can spell out the types of the functions that we need
 - It's sometimes easier to figure out solutions to problems when we zoom out to the types
 - In this case all functions take an input programmer and produce some result
 - We are writing the functions in what is called "curried" style
@@ -735,7 +735,7 @@ polyAcc(p)("PHP") // false
 `(Programmer => A) andThen (A => A)` `-->` `Programmer => A`
 
 ???
-- Where is some type, like `Money` or a function type
+- Where `A` is some type, like `Money` or a function type
 - But who said that we have to use the same `A` all over the place? 
 - Function composition works just as well with different types.
 
@@ -1082,6 +1082,7 @@ case object BangHeadOnKeyboard extends ProgAction[Nothing]
 
 ???
 - This is the same as before, except that the continuations return a generic value
+
 - Now that the type is general, maybe we can use it to stub out arbitrary chains
 
 - For this purpose, we are going to introduce some glue.
@@ -1171,7 +1172,7 @@ def map[A, B]: ProgAction[A] => (A => B) => ProgAction[B]
 
 - We can generalize the type a little.
 - Which reads as: reach into the `ProgAction`, apply the function there, and rewrap it back into a `ProgAction`.
-- With these types, there is only one way to implement this function.
+- With these types, there is only one reasonable way to implement this function.
 
 --
 
