@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title> Introduction to Functional Programming for OO Programmers</title>
+<title>Introduction to Functional Design for OO Programmers</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel='stylesheet' type='text/css' href='style.css' />
 </head>
@@ -10,10 +10,9 @@
 
 class: center, middle, transition, intro
 
-# Introduction to <br /> Functional Design for  <br /> OO Programmers
+# Introduction to Functional <br /> Design for  OO Programmers
 
-.leftFloat[]
-.rightFloat[Daniel Beskin]
+.introFloat[Daniel Beskin]
 ---
 class: center, middle
 
@@ -30,36 +29,37 @@ https://github.com/ncreep/intro_to_fp_for_oo
 
 ---
 
-class: center, middle, transition
-
-.xkcd[![](xkcd.png)]
-
-Functional programming combines the flexibility and power of abstract mathematics with the intuitive clarity of abstract mathematics.
----
-
-
 ## Why? What? How?
 
-- Why?
-  * Composability
-  * Powerful abstractions
-  * Concurrency
-  * Scalability
-  * Elegance
-  * Mathematical inclination
-  * ...
-
-- What?
-  * Putting the usage of (pure) functions to the forefront
-
-- How?
-  * Compare FP solutions to existing OO design patterns
+Why?
+* Composability
+* Powerful abstractions
+* Concurrency
+* Scalability
+* Elegance
+* Mathematical inclination
+* ...
 
 ???
 
 - I'm guessing that if you came here, you probably have a reason to be interested in FP.
 - So I won't spend much time convincing you about it.
-- Pick any one of the reasons here, or others, and just hold on to it during the lecture.
+- Pick any one of the reasons here, or others, and just hold on to it during the lecture
+
+---
+
+## Why? What? How?
+
+What?
+* Putting the usage of (pure) functions to the forefront
+* How do we str
+
+
+How?
+* Compare FP solutions to existing OO design patterns
+
+???
+
 - A natural question in this context is: what is Functional programming?
 - Just as with Object Orientation, there is no real consensus on what that is.
 - For our purposes, it's just going to be a programming style that puts the usage of (pure) functions to the forefront.
@@ -73,11 +73,11 @@ them using Functional style.
 ---
 class: middle, transition
 
-\- What are the design patterns that help structure functional systems?
+― What are the design patterns that help structure functional<br />&nbsp;&nbsp;&nbsp;&nbsp; systems?
 
-\- Design patterns? Hey everyone, look at the muggle try to get the wand to work!
+― Design patterns? Hey everyone, look at the muggle try to get the <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wand to work!
 
-.footnote[[http://sdt.bz/content/article.aspx?ArticleID=36534](http://sdt.bz/content/article.aspx?ArticleID=36534)]
+.footnote[[Larry O Brien - Functional programming’s smugness problem](https://sdtimes.com/functional-programming/code-watch-functional-programmings-smugness-problem/)]
 ---
 
 layout: true
@@ -92,7 +92,8 @@ An OO iterator
 case class Bug(c: Code)
 case class Feature(c: Code)
 
-val bugs: List[Bug] = List(Bug("null"), Bug("???"), Bug("var x = 3"))
+val bugs: List[Bug] = 
+  List(Bug("null"), Bug("???"), Bug("var x = 3"))
 
 val bugsIter = bugs.iterator
 val featureBuffer = ListBuffer[Feature]()
@@ -119,18 +120,24 @@ val features = featureBuffer.toList
 An FP (internal) iterator
 
 ```
-val features: List[Feature] = bugs map (b => Feature(b.c))
-
-val features2: List[Feature] = for (b <- bugs) yield Feature(b.c)
+val features: List[Feature] = 
+  bugs map (b => Feature(b.c))
 
 // => List(Feature(null), Feature(???), Feature(var x = 3))
-```
 
+{{content}}
+```
 ???
 - The Functional alternative is to use an "internal" iterator
 - That is, we delegate the management of the iteration itself to someone else
 - We just pass the essential data in form of a function
 - In this case, the boilerplate is minimal, and it's quite easy to see the essence of the code
+
+--
+val features2: List[Feature] = 
+  for (b <- bugs) yield Feature(b.c)
+
+???
 - Also, in Scala, we have the `for`-comprehension syntax, which is equivalent to the above
 - And in some cases may be more readable
 ---
@@ -140,8 +147,11 @@ Iteration combinators
 ```
 case class Programmer(assignedBugs: List[Bug])
 
-val p1 = Programmer(List(Bug("null"), Bug("???"), Bug("var x = 3")))
-val p2 = Programmer(List(Bug("foo.asInstanceOf[Bar]"), Bug("1 = 2")))
+val bugs1 = List(Bug("null"), Bug("???"), Bug("var x = 3"))
+val p1 = Programmer(bugs1)
+val bugs2 = List(Bug("foo.asInstanceOf[Bar]"), Bug("1 = 2"))
+val p2 = Programmer(bugs2)
+
 val ps = List(p1, p2)
 
 val allFeatures: List[Feature] =
@@ -158,15 +168,13 @@ val allFeatures: List[Feature] =
 - So we `flatMap` over the programmers list, and for every bug they have, we reuse the previous `map` invocation
 
 --
-
-val allFeatures2: List[Feature] =
-  for {
-    p <- ps
-    b <- p.assignedBugs
-  } yield Feature(b.c)
+val allFeatures2 = for {
+  p <- ps
+  b <- p.assignedBugs
+} yield Feature(b.c)
 
 // List(Feature(null), Feature(???), Feature(var x = 3),
-//      Feature(foo.asInstanceOf[Bar]), Feature(1 = 2))
+//      Feature(foo.​asInstanceOf[Bar]), Feature(1 = 2))
 
 ???
 
@@ -206,7 +214,7 @@ val compiledCode = {
 - All these `null` checks are distracting from the essence of the code
 
 ```
-val compiledCode = {
+val compiledCpodep = {
   val coffee = getCoffee()
   if (coffee == null) null
   else {
@@ -255,6 +263,7 @@ val compiledCode = getCoffee().writeCode().tryCompile()
 --
 
 The boilerplate
+.tinyCode[
 ```
 trait Coffee { def writeCode(): Code }
 case class RealCoffee(amount: Int) extends Coffee {
@@ -274,7 +283,7 @@ case object NotCompiled extends Compiled
 
 def getCoffee(): Coffee = choose(RealCoffee(3), NoCoffee)
 ```
-
+]
 ???
 
 - For each type in the code, we need a trait and a real and default implementation
@@ -303,10 +312,11 @@ val compiledCode: Option[Compiled] =
 - The `flatMap`s let us dig into the optional values and manipulate their contents
 - Now there isn't any special boilerplate, since `Option` is generic and can be used in any context
 
---
+---
 
 ```
-def getCoffee(): Option[Coffee] = choose(Some(Coffee(3)), None)
+def getCoffee(): Option[Coffee] = 
+  choose(Some(Coffee(3)), None)
 
 case class Coffee(amount: Int) {
   def writeCode(): Option[Code] =
@@ -351,8 +361,6 @@ val compiledCode: Option[Compiled] =
 layout: false
 class: center, middle, transition
 
-Now that we're all warmed up, we can move on to something more challenging
-
 .morpheus[![](morpheus.jpg)]
 
 ---
@@ -396,7 +404,8 @@ An implementation
 ```
 class BasicProgrammer(experience: XPPoints,
                       coffeeConsumption: Coffee,
-                      languages: Set[Language]) extends Programmer {
+                      languages: Set[Language]) 
+  extends Programmer {
 
   def price: Money = experience * languages.size
 
@@ -420,14 +429,20 @@ class BasicProgrammer(experience: XPPoints,
   * More experienced programmers produce more code with the same amount of coffee
   * Whether to accept a project or not depends on whether we know the language used in the project
 - To actually implement the decorator, we'll need a simple forwarding implementation
+---
 
---
-
+A decorator 
 ```
-abstract class ProgrammerDecorator(p: Programmer) extends Programmer {
+abstract class ProgrammerDecorator(p: Programmer) 
+  extends Programmer {
+  
   def price: Money = p.price
-  def makeCode(c: Coffee): LOC = p.makeCode(c)
-  def acceptProject(l: Language): Boolean = p.acceptProject(l)
+  
+  def makeCode(c: Coffee): LOC = 
+    p.makeCode(c)
+    
+  def acceptProject(l: Language): Boolean = 
+    p.acceptProject(l)
 }
 ```
 ???
@@ -439,35 +454,54 @@ Concrete decorators
 
 ```
 // a programmer that writes tests
-class TestingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
+class TestingProgrammer(p: Programmer) 
+  extends ProgrammerDecorator(p) {
+  
   override def price: Money = super.price * 2
-  override def makeCode(c: Coffee): LOC = super.makeCode(c - 5) * 3
+  
+  override def makeCode(c: Coffee): LOC = 
+    super.makeCode(c - 5) * 3
 }
 
 // a programmer that writes documentation
-class DocumentingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
+class DocumentingProgrammer(p: Programmer) 
+  extends ProgrammerDecorator(p) {
+  
   override def price: Money = super.price * 10
 }
 
-class SaneProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
-  override def acceptProject(l): Boolean =
-    if (l == "PHP") false
-    else super.acceptProject(l)
-}
-
-// a programmer that likes learning new languages
-class PolyglotProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
-  override def acceptProject(l): Boolean = !super.acceptProject(l)
-}
 ```
+
 ???
 - Now we can create decorators
 - Each one extends the `ProgrammerDecorator` class, so as to forward all un-overridden methods
 - We have:
   * A programmer that writes many tests: more expensive and writes way more code
   * A documenting programmer: more expensive for the same amount of code
-  * A sane programmer: that just refuses to accept PHP projects
-  * A polyglot programmer: just likes to learn more languages and accepts anything with a new language
+
+---
+Concrete decorators
+
+```
+class SaneProgrammer(p: Programmer) 
+  extends ProgrammerDecorator(p) {
+  
+  override def acceptProject(l): Boolean =
+    if (l == "PHP") false
+    else super.acceptProject(l)
+}
+
+// a programmer that likes learning new languages
+class PolyglotProgrammer(p: Programmer) 
+  extends ProgrammerDecorator(p) {
+  
+  override def acceptProject(l): Boolean = 
+    !super.acceptProject(l)
+}
+```
+???
+* A sane programmer: that just refuses to accept PHP projects
+* A polyglot programmer: just likes to learn more languages and accepts anything with a new language
 
 ---
 
@@ -576,7 +610,7 @@ With types
 
 Chaining
 
-.codeTable[
+.codeTableSmall[
 `TestingProgrammer(DocumentingProgrammer(prog)).price()`
 
 `-->`
@@ -595,7 +629,7 @@ Chaining
 
 With types
 
-.codeTable[
+.codeTableSmall[
 `TestingProgrammer(DocumentingProgrammer(prog)).price()`
 
 `-->`
@@ -603,9 +637,9 @@ With types
 `(Programmer => Money) andThen (Money => Money) andThen (Money => Money)`
 ]
 
-```
-(f andThen g)(x) == g(f(x))
-```
+.gap.codeTableSmall[
+`(f andThen g)(x) == g(f(x))`
+]
 
 ???
 
@@ -628,13 +662,16 @@ case class Programmer(experience: XPPoints,
 
 ```
 val price: Programmer => Money =
-  p => p.experience * p.languages.size
+  p =>
+    p.experience * p.languages.size
 
 val makeCode: Programmer => (Coffee => LOC) =
-  p => c => p.experience * math.max(0, c - p.coffeeConsumption)
+  p => c => 
+    p.experience * math.max(0, c - p.coffeeConsumption)
 
 val acceptProject: Programmer => (Language => Boolean) =
-  p => l => p.languages(l)
+  p => l =>
+    p.languages(l)
 ```
 
 ???
@@ -673,17 +710,10 @@ val testPrice: Money => Money =
 val docPrice: Money => Money =
   m => m * 10
 
-val testMakeCode: (Coffee => LOC) => (Coffee => LOC) =
+val testMakeCode: 
+  (Coffee => LOC) => (Coffee => LOC) =
   mc =>
     c => mc(c - 5) * 3
-
-val saneAccept: (Language => Boolean) => (Language => Boolean) =
-  ap =>
-    l => if (l == "PHP") false else ap(l)
-
-val polyAccept: (Language => Boolean) => (Language => Boolean) =
-  ap =>
-    l => !ap(l)
 ```
 
 ???
@@ -694,6 +724,23 @@ val polyAccept: (Language => Boolean) => (Language => Boolean) =
 - So the decorator needs to produce a new function
 - The `testMakeCode` function take a code making function, and uses it to produce a new code making function
 - Just like `super` call let's us access the functionality of the class that we are decorating
+- And the same for the other two decorators
+---
+
+The decorators
+```
+val saneAccept: 
+  (Language => Boolean) => (Language => Boolean) =
+  ap =>
+    l => if (l == "PHP") false else ap(l)
+
+val polyAccept: 
+  (Language => Boolean) => (Language => Boolean) =
+  ap =>
+    l => !ap(l)
+```
+
+???
 - Having imitated the decorators from before, we can use them
 
 ---
@@ -728,11 +775,11 @@ polyAcc(p)("PHP") // false
  Recap:
 
 - Methods are just functions: `Programmer => A`
-
 - Decorators are functions of type: `A => A`
-
 - Decoration is (almost) function composition:  
-`(Programmer => A) andThen (A => A)` `-->` `Programmer => A`
+`(Programmer => A) andThen (A => A)`  
+`-->`  
+`Programmer => A`
 
 ???
 - Where `A` is some type, like `Money` or a function type
@@ -740,9 +787,10 @@ polyAcc(p)("PHP") // false
 - Function composition works just as well with different types.
 
 --
-
 - Generified version:  
-`(Programmer => A) andThen (A => B)` `-->` `Programmer => B`
+`(Programmer => A) andThen (A => B)`  
+`-->`  
+`Programmer => B`
 
 ???
 
@@ -787,9 +835,13 @@ we could actually call whatever we want on `p`. But there's no mention of a `Pro
 ---
 
 A new decorator type
-```
-(Programmer => A) => (A => Programmer => B) --> Programmer => B
-```
+.codeTable[
+`(Programmer => A) => (A => Programmer => B) `
+
+`-->`
+
+`Programmer => B`
+]
 
 ???
 
@@ -802,20 +854,24 @@ A new decorator type
 - Let's call the new decoration function that does this `flatAndThen`
 - And we can implement it by just following the types
 
---
+---
 
 Follow the types
 ```
 implicit class Decorator[A](f: Programmer => A) {
-  def flatAndThen[B](g: A => Programmer => B): Programmer => B =
+  def flatAndThen[B](g: A => Programmer => B): 
+    Programmer => B =
+    
     p => {
-      val a: A = f(p)
-      val pToB: Programmer => B = g(a)
-      val b: B = pToB(p)
-      b
-    }
+{{content}}
+```
+
+.flatAndThenBrace[
+```
+   }
 }
 ```
+]
 
 ???
 - We'll use an implicit class to "pimp" this function directly on our functions.
@@ -825,9 +881,30 @@ implicit class Decorator[A](f: Programmer => A) {
 - To write down the function we'll just try to "follow the types" (down the rabbit hole) and see where it gets us
 - So we need to return a function that takes a `Programmer` and returns something, the programmer is `p`
 - Now we have the `f` function, it expects a `Programmer`, and the only one in scope is `p`, so let's use that
+--
+      val a: A = f(p)
+      
+{{content}}
+
+???
 - The result is some `A`, and that exactly what `g` needs, so let's apply it to `a`
+- The `g` function can now consume the `A` value, so we apply it
+--
+      val pToB: Programmer => B = g(a)
+      
+{{content}}
+
+???
 - The result is a function from a `Programmer` to `B`
 - So let's give it `p`, and the result is the `b` that we need
+--
+      val b: B = pToB(p)
+      
+{{content}}
+--
+      b
+
+???
 - Notice how the same `p` is used twice, thus making sure that the decorator work on the same programmer.
 - With this function we can take any chain of the form:
 `Programmer => A => (A => Programmer => B) => (B => Programmer => C) => ... => (C => Programmer => D)`
@@ -852,11 +929,14 @@ withBonus(p) // 70
 - So this is a decorator of the new kind
 - And we can mix and match it with the plain decorators
 
---
+---
 
+Using the new decorator
 ```
-// with enough coffee, even a dead programmer can produce code
-val deadProgrammer: (Coffee => LOC) => Programmer => (Coffee => LOC) =
+// with enough coffee, even a dead programmer can
+// produce code
+val deadProgrammer: 
+  (Coffee => LOC) => Programmer => (Coffee => LOC) =
   mc => p =>
     c => if (c > 4 * p.coffeeConsumption) mc(c) else 0
 
@@ -908,8 +988,6 @@ costEffective(p) // false
 layout: false
 class: center, middle, transition
 
-This concludes the lighter part of the talk, brace yourself...
-
 .boromir[![](boromir.jpg)]
 
 
@@ -917,14 +995,12 @@ This concludes the lighter part of the talk, brace yourself...
 
 layout: true
 
-## Interpreter Pattern
+## The Interpreter Pattern
 
 ---
 
 
 ???
-
-
 - The interpreter pattern is used when your language does not provide you with the right level of abstraction for the task at hand.
 - So you create your own Domain-Specific Language and embed it in the host language.
 - Nothing particularly OO about this. Typically, you represent the language as a `Composite`, and you interpret it using a `Visitor`.
@@ -955,12 +1031,40 @@ The domain:
 ```
 sealed trait ProgAction
 
-case class DrinkCoffee(c: Cups, next: Coffee => ProgAction) extends ProgAction
-case class WriteCode(c: Coffee, next: Code => ProgAction) extends ProgAction
-case class Compile(c: Code, next: CompileResponse => ProgAction) extends ProgAction
-case class CommitCode(c: Code) extends ProgAction
-case object BangHeadOnKeyboard extends ProgAction
+
+{{content}}
 ```
+
+???
+- The domain is modeled by `ProgAction`
+- Each action in the domain becomes a case class of type `ProgAction`
+
+--
+case class DrinkCoffee(c: Cups, 
+                       next: Coffee => ProgAction) 
+  extends ProgAction
+  
+case class WriteCode(c: Coffee, 
+                     next: Code => ProgAction)
+  extends ProgAction
+  
+case class Compile(c: Code, 
+                   next: CompileResponse => ProgAction)
+  extends ProgAction
+  
+case class CommitCode(c: Code) extends ProgAction
+  
+case object BangHeadOnKeyboard extends ProgAction
+
+???
+- For example, `DrinkCoffee` specifies how many cups we want to drink 
+- And expects a continuation function that accepts the coffee that we just drank
+- Based on the input coffee, we choose the next action
+- Similarly for `WriteCode` and `Compile`, we specify some parameter and then await a response in the continuation where we choose the next action
+- `CommitCode` and `BangHeadOnKeyboard` are final actions, since they don't have a continuation
+---
+
+The domain:
 
 ```
 sealed trait CompileResponse
@@ -971,18 +1075,11 @@ case object ScaryTypeException extends CompileResponse
 ```
 
 ???
-
-- The domain is modeled by `ProgAction`
-- Each action in the domain becomes a case class of type `ProgAction`
-- For example, `DrinkCoffee` specifies how many cups we want to drink 
-- And expects a continuation function that accepts the coffee that we just drank
-- Based on the input coffee, we choose the next action
-- Similarly for `WriteCode` and `Compile`, we specify some parameter and then await a response in the continuation where we choose the next action
-- `CommitCode` and `BangHeadOnKeyboard` are final actions, since they don't have a continuation
 - The `Compile` action takes a `CompileResponse` which can be one of the following cases
+- Where a `ScaryTypeException` is something like
 
 ---
-class: smallCode
+class: scaryTypeException
 
 `ScaryTypeException`:
 
@@ -1073,10 +1170,18 @@ A generified domain
 ```
 sealed trait ProgAction[+A]
 
-case class DrinkCoffee[A](c: Cups, next: Coffee => A) extends ProgAction[A]
-case class WriteCode[A](c: Coffee, next: Code => A) extends ProgAction[A]
-case class Compile[A](c: Code, next: CompileResponse => A) extends ProgAction[A]
+
+case class DrinkCoffee[A](c: Cups, next: Coffee => A) 
+  extends ProgAction[A]
+  
+case class WriteCode[A](c: Coffee, next: Code => A) 
+  extends ProgAction[A]
+  
+case class Compile[A](c: Code, next: CompileResponse => A) 
+  extends ProgAction[A]
+  
 case class CommitCode(c: Code) extends ProgAction[Nothing]
+
 case object BangHeadOnKeyboard extends ProgAction[Nothing]
 ```
 
@@ -1087,12 +1192,18 @@ case object BangHeadOnKeyboard extends ProgAction[Nothing]
 
 - For this purpose, we are going to introduce some glue.
 
---
+---
+
+The glue
 
 ```
 sealed trait Program[+A]
+
+
 case class Return[A](a: A) extends Program[A]
-case class Glue[A](pa: ProgAction[Program[A]]) extends Program[A]
+
+case class Glue[A](pa: ProgAction[Program[A]]) 
+  extends Program[A]
 ```
 
 ???
@@ -1131,26 +1242,36 @@ Composing `Program`s
 ```
 val drinkWrite: Program[Code]
 val compile: Code => Program[CompileResponse]
-val drinkWriteCompile: Program[CompileResponse] = drinkWrite next compile
 
-def next[A, B]: Program[A] => (A => Program[B]) => Program[B]
+val drinkWriteCompile: Program[CompileResponse] = 
+  drinkWrite next compile
+
+{{content}}
 ```
+???
+- Using the language of `Program`, we have the following types:
+- A program that produces `Code`
+- A function that take `Code` and produces a `Program` of a `CompileResponse`
+- If we generalize these types, we see that our `next` function should have the following signature
+--
+def next[A, B]: 
+  Program[A] => (A => Program[B]) => Program[B]
 
 ???
-
-- Using the language of `Program`, we have the following types:
 - `next` should reach into our program, fetch the `A` value, apply a function to it, and produce a new `Program`.
 
---
+---
 
 `next` implementation
 
 ```
 sealed trait Program[+A] {
-  def next[B](f: A => Program[B]): Program[B] = this match {
-    case Return(a) => f(a)
-    case Glue(pa: ProgAction[Program[A]]) => ???
-  }
+  def next[B](f: A => Program[B]): Program[B] = 
+    this match {
+      case Return(a) => f(a)
+      
+      case Glue(pa: ProgAction[Program[A]]) => ???
+    }
 }
 ```
 
@@ -1179,10 +1300,17 @@ def map[A, B]: ProgAction[A] => (A => B) => ProgAction[B]
 ```
 sealed trait ProgAction[+A] {
   def map[B](f: A => B): ProgAction[B] = this match {
-    case DrinkCoffee(c, next: (Coffee => A)) => DrinkCoffee(c, next andThen f)
-    case WriteCode(c, next: (Code => A)) => WriteCode(c, next andThen f)
-    case Compile(c, next: (CompileResponse => A)) => Compile(c, next andThen f)
+    case DrinkCoffee(c, next: (Coffee => A)) => 
+      DrinkCoffee(c, next andThen f)
+      
+    case WriteCode(c, next: (Code => A)) => 
+      WriteCode(c, next andThen f)
+      
+    case Compile(c, next: (CompileResponse => A)) =>
+      Compile(c, next andThen f)
+      
     case CommitCode(c) => CommitCode(c)
+    
     case BangHeadOnKeyboard => BangHeadOnKeyboard
   }
 }
@@ -1202,12 +1330,15 @@ sealed trait ProgAction[+A] {
 sealed trait Program[+A] {
   def next[B](f: A => Program[B]): Program[B] = this match {
     case Return(a) => f(a)
+    
     case Glue(pa: ProgAction[Program[A]]) => {
       val progActionB: ProgAction[Program[B]] =
         pa map { (p: Program[A]) =>
           val pb: Program[B] = p next f
+          
           pb
         }
+        
       Glue(progActionB)
     }
   }
@@ -1228,7 +1359,8 @@ val write: Program[Code] =
   Glue(WriteCode(3, code => Return(code)))
 
 val compile: Code => Program[CompileResponse] =
-  code => Glue(Compile(code, compileResp => Return(compileResp)))
+  code => 
+    Glue(Compile(code, compileResp => Return(compileResp)))
 
 val writeCompile: Program[CompileResponse] =
   write next compile
@@ -1274,17 +1406,20 @@ val commitCode: Code => Program[Nothing] =
 Examples
 
 ```
-val writeCompile: Program[CompileResponse] = writeCode(3) next compile
+val writeCompile: Program[CompileResponse] = 
+  writeCode(3) next compile
 ```
 
 
 ???
 
--  Since we wrapped all of our primitives, we can create any `Program` we want using our primitives.
+- Since we wrapped all of our primitives, we can create any `Program` we want using our primitives.
 
 - And we can now write more complicated descriptions of programmers.
 
---
+---
+
+Examples
 
 ```
 val idealProgrammer: Program[Code] =
@@ -1292,7 +1427,9 @@ val idealProgrammer: Program[Code] =
     compile(code) next { response =>
       response match {
         case WaitTime(_) => ret(code)
+        
         case Exception => idealProgrammer
+        
         case ScaryTypeException => idealProgrammer
       }
     }
@@ -1302,15 +1439,21 @@ val idealProgrammer: Program[Code] =
 ???
 - The ideal programmer just keeps writing code until it compiles and does not abuse coffee.
 
---
+---
+
+Examples
 
 ```
 val nervousProgrammer: Program[Code] =
   drinkCoffee(1) next writeCode next { code =>
     compile(code) next { response =>
       response match {
-        case WaitTime(t) => drinkCoffee(3 * t) next (_ => ret(code))
-        case Exception => drinkCoffee(2) next (_ => nervousProgrammer)
+        case WaitTime(t) => 
+          drinkCoffee(3 * t) next (_ => ret(code))
+          
+        case Exception => 
+          drinkCoffee(2) next (_ => nervousProgrammer)
+          
         case ScaryTypeException => bangHeadOnKeyboard
       }
     }
@@ -1333,6 +1476,7 @@ A pretty printer
 ```
 def print(p: Program[_]): Unit = p match {
   case Return(a) => println(a)
+  
   case Glue(pa) => pa match {
     case DrinkCoffee(cups, next) =>
       println(s"Drink coffee: $cups")
@@ -1343,12 +1487,24 @@ def print(p: Program[_]): Unit = p match {
     case Compile(code, next) =>
       println(s"Compile: '$code'")
       print(next(codeToResponse(code)))
-    case CommitCode(code) => println(s"Commit: '$code'")
-    case BangHeadOnKeyboard => println("Bang head on keyboard")
+    case CommitCode(code) => 
+      println(s"Commit: '$code'")
+    case BangHeadOnKeyboard =>
+      println("Bang head on keyboard")
   }
 }
+```
 
-def randomCode(): Code = Random.shuffle(codeToResponse.keys.toList).head
+???
+- Writing an interpreter is straightforward, just follow the possible cases one by one
+- In here, we follow the steps of our program and supply the appropriate input values
+---
+
+A pretty printer
+
+```
+def randomCode(): Code = 
+  Random.shuffle(codeToResponse.keys.toList).head
 
 val codeToResponse = Map(
   "java code" -> WaitTime(1),
@@ -1359,19 +1515,14 @@ val codeToResponse = Map(
 ```
 
 ???
-- Writing an interpreter is straightforward, just follow the possible cases one by one
-- In here, we follow the steps of our program and supply the appropriate input values
 - For each bit of code, we have some compilation response
 - As you can see, Java code compiles quite quickly, unlike Scala...
 - And we can run our programs
 ---
 
-Output
-```
-print(idealProgrammer next commitCode)
-```
-
 ```asciidoc
+print(idealProgrammer next commitCode)
+
 Drink coffee: 1
 Write with 3 coffee
 Compile: 'higher kinded madness'
@@ -1381,11 +1532,9 @@ Compile: 'java code'
 Commit: 'java code'
 ```
 
-```
-print(nervousProgrammer next commitCode)
-```
-
 ```asciidoc
+print(nervousProgrammer next commitCode)
+
 Drink coffee: 1
 Write with 3 coffee
 Compile: 'null abuse'
@@ -1411,8 +1560,6 @@ Bang head on keyboard
 layout: false
 class: center, middle, transition
 
-The heavy lifting is done, now let's step back to get some perspective
-
 .toy_story[![](toy_story.jpg)]
 
 ???
@@ -1434,6 +1581,7 @@ layout: true
 
 A common pattern
 
+.smallCode[
 ```
 type ForProg[A] = Programmer => A
 
@@ -1442,6 +1590,7 @@ def flatMap[A, B]:     Option[A]  => (A => Option[B])  => Option[B]
 def flatAndThen[A, B]: ForProg[A] => (A => ForProg[B]) => ForProg[B]
 def next[A, B]:        Program[A] => (A => Program[B]) => Program[B]
 ```
+]
 
 ???
 - By looking only at the signatures we can easily spot a repetitive pattern
@@ -1460,9 +1609,8 @@ def flatMap[A, B]: M[A] => (A => M[B]) => M[B]
 
 Monads!
 
-- `Programmer => A` is an instance of the Reader monad.
-
-- `Program[A]` is an instance of the Free monad.
+- .smallCode[`Programmer => A`] is an instance of the Reader monad.
+- .smalCode[`Program[A]`] is an instance of the Free monad.
 
 ???
 
@@ -1471,6 +1619,7 @@ Monads!
 - With the Free monad you can do a whole lot more than just interpreters, but that's a whole topic in itself.
 
 ---
+class:monadsList
 
 Monads on the web:
 
@@ -1500,13 +1649,13 @@ Monads on the web:
 - [Bob the monadic lover](http://www.haskell.org/haskellwiki/Meet_Bob_The_Monadic_Lover)
 
 --
-- [A monad is a programmable semicolon](http://www.cs.ucsb.edu/~benh/162/slides/06-monads.pdf)
+- [A monad is a programmable semicolon](http://blog.vmchale.com/article/programmable-semicolon)
 
 --
 - [The monad tutorial fallacy](http://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/)
 
 --
-- [~~Monads~~ Warm fuzzy things](http://www.urbandictionary.com/define.php?term=warm%20fuzzy%20things)
+- [~~Monads~~ Warm fuzzy things](https://www.urbandictionary.com/define.php?term=Warm%20Fuzzy%20Thing)
 
 --
 - [A monad is just a monoid in the category of endofunctors](http://stackoverflow.com/questions/3870088/a-monad-is-just-a-monoid-in-the-category-of-endofunctors-whats-the-problem)
@@ -1540,19 +1689,30 @@ val costEffective: Programmer => Boolean =
   } yield mc(p.coffeeConsumption) > pr
 ```
 
+???
+- This translates to exact code that we've written using `andThen` and `flatAndThen`
+- But just like with `List`s and `Option`s using the `for` syntax is sometimes more readable
+- Especially if you have a number of chained steps
+- We can do something similar with the `Program`s from the previous part
+---
+
+Monadic `for`
 ```
 def nervousProgrammer: Program[Code] =
   for {
     code <- drinkCoffee(1) next writeCode
     response <- compile(code)
     finalCode <- response match {
-      case WaitTime(t) => drinkCoffee(3 * t) next (_ => ret(code))
-      case Exception => drinkCoffee(1) next (_ => nervousProgrammer)
+      case WaitTime(t) => 
+        drinkCoffee(3 * t) next (_ => ret(code))
+        
+      case Exception => 
+        drinkCoffee(1) next (_ => nervousProgrammer)
+        
       case ScaryTypeException => bangHeadOnKeyboard
     }
   } yield finalCode
 ```
-
 ???
 
 - Monads are one of the many mathematical structures that are used in Functional programming.
@@ -1565,14 +1725,22 @@ def nervousProgrammer: Program[Code] =
 
 ---
 layout: false
-class: center middle, transition
+class: center, middle, transition
 
-##...and we're done. Thank you!
-##Questions?
+.xkcd[![](xkcd.png)]
+
+.xkcdTitle[
+>Functional programming combines the flexibility and power of abstract mathematics with the intuitive clarity of abstract mathematics.
+]
+
+
+.questions[
+Questions?
+]
 
   </textarea>
 	<script
-		src="remark-0.13.0.min.js"
+		src="remark-0.14.0.min.js"
 		type="text/javascript">
 
 	</script>
