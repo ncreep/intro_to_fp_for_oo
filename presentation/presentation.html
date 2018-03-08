@@ -29,9 +29,13 @@ https://github.com/ncreep/intro_to_fp_for_oo
 
 ---
 
-## Why? What? How?
+layout: true
+## Intro
 
-Why?
+---
+
+Why Functional Programming?
+
 * Composability
 * Powerful abstractions
 * Concurrency
@@ -48,36 +52,48 @@ Why?
 
 ---
 
-## Why? What? How?
-
-What?
-* Putting the usage of (pure) functions to the forefront
-* How do we str
-
-
-How?
-* Compare FP solutions to existing OO design patterns
+Putting the usage of (pure) functions to the forefront
 
 ???
-
-- A natural question in this context is: what is Functional programming?
+- A natural question in this context is: what do I mean when I say Functional Programming?
 - Just as with Object Orientation, there is no real consensus on what that is.
 - For our purposes, it's just going to be a programming style that puts the usage of (pure) functions to the forefront.
 - Not a very useful definition, but that will have to do.
-- To make the whole thing closer to the OO world, we are going to pick several well-known OO design patterns and try to reimplement
-them using Functional style.
-- As a caveat, note that in Scala, being a hybrid OO/FP language, in some cases it might be actually  more appropriate to use a non-FP approach.
-- But we are going to ignore this for the purposes of this lecture.
 
+--
+
+For example:
+* Anonymous functions
+* Higher-order functions
+* Recursion
+
+--
+
+How do you build anything with this?
+
+???
+- And as you make your first step into this world you probably learned about things like anonymous functions, higher-order functions and recursion
+- These are all very powerful techniques.
+- But coming from the world object-oriented programming, you might find yourself thinking, how do I build anything with these building blocks? 
+- That is, how do we design bigger programs when all we have are just functions?
+- In this talk, we will try to take some steps towards answering this question
 
 ---
+layout: false
 class: middle, transition
 
-― What are the design patterns that help structure functional<br />&nbsp;&nbsp;&nbsp;&nbsp; systems?
-
-― Design patterns? Hey everyone, look at the muggle try to get the <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wand to work!
+> ― What are the design patterns that help structure functional<br />&nbsp;&nbsp;&nbsp;&nbsp; systems?
+>
+> ― Design patterns? Hey everyone, look at the muggle try to get <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the wand to work!
 
 .footnote[[Larry O Brien - Functional programming’s smugness problem](https://sdtimes.com/functional-programming/code-watch-functional-programmings-smugness-problem/)]
+
+???
+- One of the most common tools to go to when thinking about program design in the object-oriented world is design patterns
+- But as you might have gathered, design-patterns aren't much talked about in the context of functional programming
+- As this quote shows, they are even considered somewhat unnecessary
+- So what we'll do in this talk, is to look at some well-known design patterns and see how we tackle the same problems in a functional way
+- This should give us some insight into the design of functional programs  
 ---
 
 layout: true
@@ -85,6 +101,11 @@ layout: true
 ## Warm-up: Iterator
 
 ---
+
+???
+- We are going to start with some simple and hopefully familiar examples as warm-up
+- We will gradually move to more advanced topics, so I hope that everyone will find something of interest in this talk
+--
 
 An OO iterator
 
