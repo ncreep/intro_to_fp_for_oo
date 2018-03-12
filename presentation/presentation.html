@@ -13,19 +13,18 @@ class: center, middle, transition, intro
 # Introduction to Functional <br /> Design for  OO Programmers
 
 .introFloat[Daniel Beskin]
+
+???
+- We are going to talk about functional design, from the point of view of a object oriented programmer
+
 ---
 class: center, middle
 
-The full code can be found at:
+The full code and presentation can be found at:
 
 https://github.com/ncreep/intro_to_fp_for_oo
 
 ???
-
-- This is going to be an introduction to some not so basic Functional programming concepts, from the point of view of an OO programmer.
-- I'll be assuming that you're familiar with Object Oriented Design
-- I'll be assuming that you are comfortable with the more basic concepts like recursion and higher order functions.
-- If not, we have a quick warm up ahead of us, so I hope you do get up to speed.
 
 ---
 
@@ -46,19 +45,21 @@ Why Functional Programming?
 
 ???
 
-- I'm guessing that if you came here, you probably have a reason to be interested in FP.
+- I'm guessing that if you came here, you probably have a reason to be interested in Functional Programming.
 - So I won't spend much time convincing you about it.
-- Pick any one of the reasons here, or others, and just hold on to it during the lecture
-
+- There are plenty of reasons to be interested
+- So pick any one of the reasons here, or others, and just hold on to it during the lecture
+- A natural question in this context is: what do I mean when I say Functional Programming?
 ---
 
 Putting the usage of (pure) functions to the forefront
 
 ???
-- A natural question in this context is: what do I mean when I say Functional Programming?
 - Just as with Object Orientation, there is no real consensus on what that is.
 - For our purposes, it's just going to be a programming style that puts the usage of (pure) functions to the forefront.
 - Not a very useful definition, but that will have to do.
+- And as you make your first steps into this world you probably learned about things like
+
 
 --
 
@@ -67,13 +68,15 @@ For example:
 * Higher-order functions
 * Recursion
 
+???
+- Anonymous functions, higher-order functions and recursion
+- These are all very powerful techniques.
+
 --
 
 How do you build anything with this?
 
 ???
-- And as you make your first step into this world you probably learned about things like anonymous functions, higher-order functions and recursion
-- These are all very powerful techniques.
 - But coming from the world object-oriented programming, you might find yourself thinking, how do I build anything with these building blocks? 
 - That is, how do we design bigger programs when all we have are just functions?
 - In this talk, we will try to take some steps towards answering this question
@@ -105,6 +108,7 @@ layout: true
 ???
 - We are going to start with some simple and hopefully familiar examples as warm-up
 - We will gradually move to more advanced topics, so I hope that everyone will find something of interest in this talk
+
 --
 
 An OO iterator
@@ -234,35 +238,6 @@ val compiledCode = {
 - And the `writeCode` method may return `null` if there isn't enough coffee to produce code
 - All these `null` checks are distracting from the essence of the code
 
-```
-val compiledCpodep = {
-  val coffee = getCoffee()
-  if (coffee == null) null
-  else {
-    val code = coffee.writeCode()
-    if (code == null) null
-    else code.tryCompile()
-  }
-}
-
-// either 'null' or 'Compiled(3 coffee => code)'
-
-def getCoffee(): Coffee = choose(Coffee(3), null)
-
-// choose a random item from the two
-def choose[A](x: A, y: A): A = if (util.Random.nextDouble() < 0.5) x else y
-
-case class Coffee(amount: Int) {
-  def writeCode(): Code = choose(Code(s"$amount coffee => code"), null)
-}
-
-case class Code(code: String) {
-  def tryCompile(): Compiled = choose(Compiled(code), null)
-}
-
-case class Compiled(code: String)
-```
-
 ---
 
 Using Null Objects
@@ -276,7 +251,7 @@ val compiledCode = getCoffee().writeCode().tryCompile()
 ???
 - There is a design pattern called the Null Object
 - Where for a type that can be somehow missing we define a special subtype that represents an empty or default value
-- With this approach we can cleanup our pervious code into this
+- With this approach we can clean up our pervious code into this
 - Here, the flow of the code is clean and obvious
 - The result here is either some compiled code (when all values are present), or a default missing value (when something's missing)
 - But there's a price, boilerplate
@@ -309,8 +284,8 @@ def getCoffee(): Coffee = choose(RealCoffee(3), NoCoffee)
 
 - For each type in the code, we need a trait and a real and default implementation
 - Null objects are safer, but require way too much boilerplate for every case. In return:
-  * we don't get any help from the compiler (the compiler can't tell apart the different instances of a trait)
-  * there is no generic way to compose different null objects
+- We don't get any help from the compiler (the compiler can't tell apart the different instances of a trait)
+- There is no generic way to compose different null objects
 - Let's look at the FP alternative, `Option`
 ---
 
@@ -353,7 +328,7 @@ case class Compiled(code: String)
 ```
 
 ???
-- Every time we a value is missing we return `None`
+- Every time a value is missing we return `None`
 - All the special case handling is wrapped inside the `map` and `flatMap` methods
 - We can also slightly simplify the code by using `for` notation
 ---
@@ -384,6 +359,8 @@ class: center, middle, transition
 
 .morpheus[![](morpheus.jpg)]
 
+???
+- Now that we're all warmed up, we can move on to something more challenging
 ---
 layout: true
 
@@ -394,9 +371,7 @@ layout: true
 ???
 
 - The decorator pattern is used to create different combinations of object behaviors.
-
 - Probably the most Scala-esque way to achieve this is the [stackable trait pattern](http://www.artima.com/scalazine/articles/stackable_trait_pattern.html).
-
 - But we'll stick to the more conventional version of the pattern.
 
 ---
@@ -414,9 +389,9 @@ trait Programmer {
 ???
 - So we'll continue modeling programmers
 - In this case a programmer has three methods:
-  * A price
-  * The ability to turn coffee into lines of code
-  * And accepting or rejecting a project based on its language
+- A price
+- The ability to turn coffee into lines of code
+- And accepting or rejecting a project based on its language
 
 ---
 
@@ -442,13 +417,13 @@ class BasicProgrammer(experience: XPPoints,
 
 - We start with the basic implementation of the programmer trait
 - We'll base the implementation on the following data about the programmer:
-  * The amount of experience
-  * The coffee consumption
-  * The languages that the programmer knows
+- The amount of experience
+- The coffee consumption
+- The languages that the programmer knows
 - The implementation is straightforward
-  * The more experience and languages that the programmer has, the higher the price
-  * More experienced programmers produce more code with the same amount of coffee
-  * Whether to accept a project or not depends on whether we know the language used in the project
+- The more experience and languages that the programmer has, the higher the price
+- More experienced programmers produce more code with the same amount of coffee
+- Whether to accept a project or not depends on whether we know the language used in the project
 - To actually implement the decorator, we'll need a simple forwarding implementation
 ---
 
@@ -497,8 +472,8 @@ class DocumentingProgrammer(p: Programmer)
 - Now we can create decorators
 - Each one extends the `ProgrammerDecorator` class, so as to forward all un-overridden methods
 - We have:
-  * A programmer that writes many tests: more expensive and writes way more code
-  * A documenting programmer: more expensive for the same amount of code
+- A programmer that writes many tests: more expensive and writes way more code
+- A documenting programmer: more expensive for the same amount of code
 
 ---
 Concrete decorators
@@ -593,10 +568,9 @@ Converting from OO to FP
 - We need to rephrase the problem in terms of functions that are separate from the data they operate on.
 - Because of the implicit `this`, we can view method calls as functions
 - Like the following:
-  * The `price` method becomes a function that takes a programmer instance and produces the price
-  * The `makeCode` method is a bit more complicated, since it takes an argument, but the principle is the same:  
-    take a programmer and the other argument and produce a result
-  * Same for the `acceptProject` method
+- The `price` method becomes a function that takes a programmer instance and produces the price
+- The `makeCode` method is a bit more complicated, since it takes an argument, but the principle is the same:  take a programmer and the other argument and produce a result
+- Same for the `acceptProject` method
   
 --
 
@@ -717,7 +691,7 @@ acceptProject(p)("PHP") // true
 ```
 
 ???
-- Using the functions is simple, just apply the to the programmer instance
+- Using the functions is simple, just apply the function to the programmer instance
 - The results are the same as before
 - We can now code the decorators
 
@@ -743,8 +717,8 @@ val testMakeCode:
 - The `makeCode` decorator is slightly more complicated
 - Here we are not just getting a value from the programmer function, the result is a function by itself
 - So the decorator needs to produce a new function
-- The `testMakeCode` function take a code making function, and uses it to produce a new code making function
-- Just like `super` call let's us access the functionality of the class that we are decorating
+- The `testMakeCode` function takes a code making function, and uses it to produce a new code making function
+- Just like `super` call lets us access the functionality of the class that we are decorating
 - And the same for the other two decorators
 ---
 
@@ -791,6 +765,7 @@ polyAcc(p)("PHP") // false
 - Notice that we only create the functions that were actually overridden by the OO decorators
 - So there's no need for a base decorator or anything, we just mix and match 
 - And the results are just as before
+- So let's recap
 ---
 
  Recap:
@@ -818,6 +793,7 @@ polyAcc(p)("PHP") // false
 - Here we have more flexibility in what we use as decorators
 - To achieve this in the OO version we would have to change the `Programmer` interface for every new function that we want to define
 - Which is not a good thing
+- Let's try to create a genera
 ---
 
 Using a general decorator
@@ -848,10 +824,11 @@ and turn it into a single function `Programmer => D`
 ```
 class DocumentingProgrammer(p: Programmer) extends ProgrammerDecorator(p) {
     override def price: Money = super.price * 10
-  }
+}
 ```
 we could actually call whatever we want on `p`. But there's no mention of a `Programmer` down our functions chain.
 - So how do we translate it back to our Functional code?
+- Let's create a new decorator type
 
 ---
 
@@ -908,6 +885,7 @@ implicit class Decorator[A](f: Programmer => A) {
 {{content}}
 
 ???
+
 - The result is some `A`, and that exactly what `g` needs, so let's apply it to `a`
 - The `g` function can now consume the `A` value, so we apply it
 --
@@ -916,6 +894,7 @@ implicit class Decorator[A](f: Programmer => A) {
 {{content}}
 
 ???
+
 - The result is a function from a `Programmer` to `B`
 - So let's give it `p`, and the result is the `b` that we need
 --
@@ -926,6 +905,7 @@ implicit class Decorator[A](f: Programmer => A) {
       b
 
 ???
+
 - Notice how the same `p` is used twice, thus making sure that the decorator work on the same programmer.
 - With this function we can take any chain of the form:
 `Programmer => A => (A => Programmer => B) => (B => Programmer => C) => ... => (C => Programmer => D)`
@@ -993,17 +973,17 @@ costEffective(p) // false
 ???
 
 - We can also combine a number of `Programmer` functions.
-- We are trying to figure out whether a programmer is cost effective, that is whether he produces more code than his price
+- We are trying to figure out whether a programmer is cost effective, that is whether the programmer produces more code than his/hers price
 - `makeCode` is like a container for a `Coffee => LOC` function value, and `price` is a container for a `Money` value.
 - `andThen` and `flatAndThen` help us reach inside the container and manipulate its contents (sounds familiar?).
 - The values depend on the `Programmer` instance that we are going to provide in the future.
 - Kind of like Dependency Injection.
 - But it's becoming a bit clumsy to write, we'll address this issue later on.
 - To conclude:
-  * OO decoration is similar to FP (flattened) function composition.
-  * OO decoration works well when we have a fixed set of functions and many types of data.
-  * FP decoration works well when we have a fixed set of data types and many functions to calculate over them.
-  * Because of how function composition works, when used in the right context, FP decoration is much more flexible and lightweight than the OO counterpart.
+- OO decoration is similar to FP (flattened) function composition.
+- OO decoration works well when we have a fixed set of functions and many types of data.
+- FP decoration works well when we have a fixed set of data types and many functions to calculate over them.
+- Because of how function composition works, when used in the right context, FP decoration is much more flexible and lightweight than the OO counterpart.
 
 ---
 layout: false
@@ -1011,7 +991,8 @@ class: center, middle, transition
 
 .boromir[![](boromir.jpg)]
 
-
+???
+- This concludes the lighter part of the talk, brace yourself...
 ---
 
 layout: true
@@ -1028,7 +1009,7 @@ layout: true
 - Both patterns are pretty much lifted from FP, so we'll skip the OO implementation this time.
 - Scala has a number of ways to create DSLs, e.g.: higher order functions, macros, string interpolators.
 - We'll try to come up with a way that works particularly well with separating the language from its interpretation.
-
+- We start with the domain that we are modelling
 --
 The domain:
 
@@ -1040,11 +1021,12 @@ The domain:
 
 ???
 
+- Again, we are modeling a programmer, and a programmer is model by a number of actions
 - We would like to interconnect the different actions, so that one leads to another.
 - We also want to have interaction with the outer world.
 - For example, compilation produces some response from outside, and based on this response we choose the next action.
 - But we do not want our language to know anything about how to obtain the responses, the interpreter will be responsible for that.
-- And this is the domain that we'll be modeling
+
 ---
 
 The domain:
@@ -1097,6 +1079,7 @@ case object ScaryTypeException extends CompileResponse
 
 ???
 - The `Compile` action takes a `CompileResponse` which can be one of the following cases
+- Waiting time, exceptions and scary exceptions
 - Where a `ScaryTypeException` is something like
 
 ---
@@ -1134,6 +1117,8 @@ scala.collection.mutable.Set[test.TaggedMapper[_, _, _]])
 
 and so on for another 200 lines
 
+???
+- So let's write a sample program
 ---
 
 A sample program
@@ -1151,11 +1136,11 @@ val prog: ProgAction =
 
 ???
 - The sample program does the following:
-  * We ask for three cups of coffee
-  * We use the input coffee to write code
-  * The resulting code is compiled
-  * If the response is just waiting, we wait and then commit the code
-  * Otherwise, we bang our head on the keyboard
+- We ask for three cups of coffee
+- We use the input coffee to write code
+- The resulting code is compiled
+- If the response is just waiting, we wait and then commit the code
+- Otherwise, we bang our head on the keyboard
 ---
 
 Combining smaller programs
@@ -1183,6 +1168,7 @@ drinkWrite next compile
 - And what do we put instead of the `???`?
 - The first snippet worked because we ended with either `CommitCode` or `BangHeadOnKeyboard`, both of those do not require any further actions.
 - But that's not the case with the other actions, we can't finish a snippet with any of those.
+- Since the problem we have involves the types we used, we can try to solve it by tweaking the types
 - Let's loosen up the types a little bit, and see whether we can make this work.
 
 ---
@@ -1208,9 +1194,7 @@ case object BangHeadOnKeyboard extends ProgAction[Nothing]
 
 ???
 - This is the same as before, except that the continuations return a generic value
-
 - Now that the type is general, maybe we can use it to stub out arbitrary chains
-
 - For this purpose, we are going to introduce some glue.
 
 ---
@@ -1253,7 +1237,6 @@ val drinkWrite: Program[Code] =
 ???
 - Each `Program` snippet contains the response for the action wrapped in a `Return`
 - And the generic value of the `Program` becomes the thing that we `Return`
-
 - Stubbing done, what about the `next` function?
 
 ---
@@ -1279,7 +1262,9 @@ def next[A, B]:
   Program[A] => (A => Program[B]) => Program[B]
 
 ???
+
 - `next` should reach into our program, fetch the `A` value, apply a function to it, and produce a new `Program`.
+- Let's implement it
 
 ---
 
@@ -1312,7 +1297,7 @@ def map[A, B]: ProgAction[A] => (A => B) => ProgAction[B]
 
 ???
 
-- We can generalize the type a little.
+- If we generalize the type a little, we have this signature for our solution
 - Which reads as: reach into the `ProgAction`, apply the function there, and rewrap it back into a `ProgAction`.
 - With these types, there is only one reasonable way to implement this function.
 
@@ -1434,8 +1419,7 @@ val writeCompile: Program[CompileResponse] =
 
 ???
 
-- Since we wrapped all of our primitives, we can create any `Program` we want using our primitives.
-
+- Since we wrapped all of our primitives, we can create any `Program` we want using the wrappers.
 - And we can now write more complicated descriptions of programmers.
 
 ---
@@ -1483,11 +1467,8 @@ val nervousProgrammer: Program[Code] =
 
 ???
 - The nervous programmer abuses coffee, without actually turning it into code...
-
 - Now that we have a language, it would be a bit pointless if we don't do something with it.
-
 - Let's hack up an interpreter for it.
-
 - Our interpreter is just a pretty printer.
 
 ---
@@ -1585,11 +1566,9 @@ class: center, middle, transition
 
 ???
 
-
+- The heavy lifting is done, now let's step back to get some perspective
 - Remember how way back on one of the first slides we dissed design patterns?
-
 - Let's drop the "design" and just look for patterns.
-
 - Do we see any in the different FP examples thus far?
 
 ---
@@ -1636,9 +1615,11 @@ Monads!
 ???
 
 - Things like `M` actually have a name, which comes from abstract math, they are called Monads.
-
+- And specifically, our `Programmer` functions are an instance of the `Reader` monad
+- And our `Program` type is an instance of the Free monad
 - With the Free monad you can do a whole lot more than just interpreters, but that's a whole topic in itself.
-
+- Now, monads are known to be a tricky topic to tackle
+- As evidenced by the amount of resources on monads that can be found on the web
 ---
 class:monadsList
 
@@ -1683,18 +1664,12 @@ Monads on the web:
 
 ???
 
-- So I won't be explaining monads in this lecture.
-
+- So I won't be explaining monads in this talk.
 - But I will give you some motivation on why you should care about them.
-
 - Once you figure out that something is a monad, you can apply generic monad functions on it.
-
 - A concrete example in Scala is the `for` syntax.
-
 - The `for` syntax is provided for free for anything that can be regarded as a monad.
-
 - Specifically, anything that supports `flatMap` (and `map`).
-
 - We can rewrite some of the code from before with `for` notation (the full code is in the repository).
 
 ---
@@ -1736,12 +1711,9 @@ def nervousProgrammer: Program[Code] =
 ```
 ???
 
-- Monads are one of the many mathematical structures that are used in Functional programming.
-
+- Monads are one of the many mathematical structures that are used in Functional Programming.
 - Different code patterns, become mathematical structures.
-
-- These are the equivalents of design patterns in FP.
-
+- These are, in my opinion, are the equivalents of design patterns in FP.
 - Looking around for these patterns, can greatly improve the design of our code.
 
 ---
@@ -1766,7 +1738,11 @@ Questions?
 
 	</script>
 	<script type="text/javascript">
-    var slideshow = remark.create({ highlightLanguage: 'scala', highlightStyle: 'magula'});
+    var slideshow = remark.create({ 
+      highlightLanguage: 'scala', 
+      highlightStyle: 'magula',
+      countIncrementalSlides: false
+    });
     //document.addEventListener('click', function (e) { slideshow.gotoNextSlide() }, false);
 	</script>
 </body>
